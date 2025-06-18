@@ -72,16 +72,6 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable Long id) {
         log.info("Controller: Delete user with id: {}", id);
-
-        taskAssignmentService.unassignTasksFromUser(id);
-        eventService.unsignUserAndCreatorFromAll(id);
-
-        notificationService.deleteAllLinksToUser(id);
-
-        invitationService.changeCreatorToDeletedUser(id);
-        commentService.changeCreatorToDeletedUser(id);
-        taskService.changeCreatorToDeletedUser(id);
-
         userService.delete(id);
     }
 
