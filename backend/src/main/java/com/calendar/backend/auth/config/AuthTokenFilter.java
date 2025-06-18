@@ -51,7 +51,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 log.info("Auth: Processing JWT token");
                 String token = getAccessToken(request);
 
-                if (!jwtUtils.validateToken(token)) {
+                if (!jwtUtils.validateToken(token, request)) {
                     log.error("Auth: Invalid JWT token");
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     setHeaders(response);

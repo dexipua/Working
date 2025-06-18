@@ -3,6 +3,7 @@ package com.calendar.backend.auth.config;
 import com.calendar.backend.auth.models.RefreshToken;
 import com.calendar.backend.auth.services.inter.RefreshTokenService;
 import com.calendar.backend.models.User;
+import com.calendar.backend.services.inter.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -10,6 +11,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -23,6 +25,7 @@ import java.util.Map;
 
 @Slf4j
 @Component
+@AllArgsConstructor
 public class JwtUtils {
 
     @Value("${SECRET}")
@@ -32,10 +35,7 @@ public class JwtUtils {
     private long jwtExpirationMs;
 
     private final RefreshTokenService refreshTokenService;
-
-    public JwtUtils(RefreshTokenService refreshTokenService) {
-        this.refreshTokenService = refreshTokenService;
-    }
+    private final UserService userService;
 
     private static final String ISSUER = "com.todo.app";
     private static final String AUDIENCE = "todo-users";
@@ -104,7 +104,7 @@ public class JwtUtils {
         return parseClaims(token).getSubject();
     }
 
-    public boolean validateToken(String token, User user, HttpServletRequest request) {
+    public boolean validateToken(String token, HttpServletRequest request) {
         try {
             Claims claims = parseClaims(token);
 
@@ -120,7 +120,7 @@ public class JwtUtils {
             String username = this.getSubject(token);
 
             Map<String, Object> claimsToCheck = new HashMap<>();
-            claimsToCheck.put("token", refreshTokenService.findByUser(username).orElseThrow(() ->
+            claimsToCheck.put("token", refreshTokenService.findByUser(userService.findByEmailForServices(username), request).orElseThrow(() ->
                     new EntityNotFoundException("Can`t find refresh token to validate jwt")).getToken());
 
             for (Map.Entry<String, Object> entry : claimsToCheck.entrySet()) {
