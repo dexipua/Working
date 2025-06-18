@@ -24,13 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final TaskAssignmentService taskAssignmentService;
-    private final NotificationService notificationService;
-    private final InvitationService invitationService;
-    private final CommentService commentService;
-    private final EventService eventService;
     private final UserService userService;
-    private final TaskService taskService;
     private final UserMapper userMapper;
 
 
@@ -119,59 +113,5 @@ public class UserController {
     ) {
         log.info("Controller: Get all users");
         return userService.findAll(email, firstName, lastName, role, page, size, auth);
-    }
-
-    @PreAuthorize("@userSecurity.checkUserOfEvent(#auth, #eventId)")
-    @GetMapping("/events/{event_id}")
-    @ResponseStatus(HttpStatus.OK)
-    public PaginationListResponse<UserListResponse> getUsersByEvent(
-            @PathVariable(value = "event_id") Long eventId,
-            @RequestParam Integer page,
-            @RequestParam Integer size,
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) String firstName,
-            @RequestParam(required = false) String lastName,
-            @RequestParam(required = false) String role,
-            Authentication auth) {
-        log.info("Controller: Get all users for event with id: {}", eventId);
-        return userService.findAllByEventId(email, firstName, lastName, role, eventId, page, size, auth);
-    }
-
-    @PreAuthorize("@userSecurity.checkUserOfEvent(#auth, #eventId)")
-    @GetMapping("/not_events/{event_id}")
-    @ResponseStatus(HttpStatus.OK)
-    public PaginationListResponse<UserListResponse> getUsersByNotEvent(
-            @PathVariable(value = "event_id") Long eventId,
-            @RequestParam Integer page,
-            @RequestParam Integer size,
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) String firstName,
-            @RequestParam(required = false) String lastName,
-            @RequestParam(required = false) String role,
-            Authentication auth) {
-        log.info("Controller: Get all users for not event with id: {}", eventId);
-        return userService.findAllByEventsNotContains(email, firstName, lastName, role, eventId, page, size);
-    }
-
-
-    @GetMapping("/countTop5ByPastEvents")
-    @ResponseStatus(HttpStatus.OK)
-    public List<UserListResponse> getTopFiveUsersCount() {
-        log.info("Controller: Get top five users count");
-        return userService.findTop5UsersByPastEvents();
-    }
-
-    @GetMapping("/countTop5ByDoneTasks")
-    @ResponseStatus(HttpStatus.OK)
-    public List<UserListResponse> getDoneTasksCount() {
-        log.info("Controller: Get done tasks count");
-        return userService.findTop5UsersByDoneTasks();
-    }
-
-    @GetMapping("/countTop5BySentComments")
-    @ResponseStatus(HttpStatus.OK)
-    public List<UserListResponse> getSentCommentsCount() {
-        log.info("Controller: Get sent comments count");
-        return userService.findTop5UsersBySentComments();
     }
 }

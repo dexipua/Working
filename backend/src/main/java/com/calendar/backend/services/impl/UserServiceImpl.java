@@ -120,70 +120,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public PaginationListResponse<UserListResponse> findAllByEventId(
-            String email, String firstName, String lastName, String role,
-            long eventId, int page, int size, Authentication auth) {
-
-        User user = findUserByAuth(auth);
-        Map<String, Object> filters = createFilters(email, firstName, lastName, role);
-
-        log.info("Service: Finding all users disincluding me with filters {} and event id {}", filters, eventId);
-
-        Page<User> users = userRepository.findAll(
-                UserSpecification.hasEvent(eventId)
-                        .and(UserSpecification.notUser(user.getId()))
-                        .and(UserSpecification.filterUsers(filters))
-                        .and(UserSpecification.notIncludeDeleted()),
-                PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "lastName", "firstName")));
-
-        return createResponse(users);
-    }
-
-    @Override
-    public PaginationListResponse<UserListResponse> findAllByEventsNotContains(
-            String email, String firstName, String lastName, String role, long eventId, int page, int size) {
-
-        Map<String, Object> filters = createFilters(email, firstName, lastName, role);
-        log.info("Service: Finding all users with events not contains event with id {}", eventId);
-
-        Page<User> users = userRepository.findAll(
-                UserSpecification.doesNotHaveEvent(eventId)
-                        .and(UserSpecification.filterUsers(filters))
-                        .and(UserSpecification.notIncludeDeleted()),
-                PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "lastName", "firstName")));
-
-        return createResponse(users);
-    }
-
-    @Override
-    public List<UserListResponse> findTop5UsersBySentComments() {
-        log.info("Service: Finding top 5 users with sent comments");
-
-        List<User> users = userRepository.findTop5UsersBySentComments();
-
-        return users.stream().map(userMapper::fromUserToUserListResponse).toList();
-    }
-
-    @Override
-    public List<UserListResponse> findTop5UsersByPastEvents() {
-        log.info("Service: Finding top 5 users with upcoming events");
-
-        LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Kiev"));
-        List<User> users = userRepository.findTop5UsersByPastEvents(now);
-
-        return users.stream().map(userMapper::fromUserToUserListResponse).toList();
-    }
-
-    @Override
-    public List<UserListResponse> findTop5UsersByDoneTasks() {
-        log.info("Service: Finding top 5 users with done tasks");
-
-        List<User> users = userRepository.findTop5UsersByDoneTasks();
-
-        return users.stream().map(userMapper::fromUserToUserListResponse).toList();
-    }
-
-    @Override
     public User findUserByAuth(Authentication authentication) {
         log.info("Service: Finding user by authentication {}", authentication);
 
@@ -207,13 +143,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(email).orElseThrow(
                 () -> new EntityNotFoundException("User not found")
         );
-    }
-
-    @Override
-    public List<User> findAllByEventIdForServices(long eventId){
-        log.info("Service: Finding all users for event with id {}", eventId);
-
-        return userRepository.findAllByEventId(eventId);
     }
 
     @Override
