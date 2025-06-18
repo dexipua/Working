@@ -2,12 +2,14 @@ package com.calendar.backend.auth.config;
 
 import com.calendar.backend.auth.models.RefreshToken;
 import com.calendar.backend.auth.services.inter.RefreshTokenService;
+import com.calendar.backend.models.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -61,7 +63,7 @@ public class JwtUtils {
     }
 
     public boolean isRefreshTokenExpired(RefreshToken token) {
-        return token.getExpirationTimestamp().isBefore(LocalDateTime.now());
+        return token.getExpirationTime().isBefore(LocalDateTime.now());
     }
 
     public String refreshAccessToken(String username, String token) {
@@ -102,7 +104,7 @@ public class JwtUtils {
         return parseClaims(token).getSubject();
     }
 
-    public boolean validateToken(String token) {
+    public boolean validateToken(String token, User user, HttpServletRequest request) {
         try {
             Claims claims = parseClaims(token);
 
@@ -118,7 +120,7 @@ public class JwtUtils {
             String username = this.getSubject(token);
 
             Map<String, Object> claimsToCheck = new HashMap<>();
-            claimsToCheck.put("token", refreshTokenService.findByUsername(username).orElseThrow(() ->
+            claimsToCheck.put("token", refreshTokenService.findByUser(username).orElseThrow(() ->
                     new EntityNotFoundException("Can`t find refresh token to validate jwt")).getToken());
 
             for (Map.Entry<String, Object> entry : claimsToCheck.entrySet()) {

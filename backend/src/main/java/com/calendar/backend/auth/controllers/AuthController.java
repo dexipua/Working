@@ -7,15 +7,21 @@ import com.calendar.backend.auth.services.impl.RefreshTokenServiceImpl;
 import com.calendar.backend.dto.wrapper.StringRequest;
 import com.calendar.backend.models.User;
 import com.calendar.backend.services.inter.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +46,8 @@ public class AuthController {
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody @Valid LogInRequest loginRequest) {
+    public ResponseEntity<Void> login(@RequestBody @Valid LogInRequest loginRequest,
+                      HttpServletRequest request, HttpServletResponse response) {
         log.info("Login user {}", loginRequest);
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -50,22 +57,32 @@ public class AuthController {
 
         String username =user.getUsername();
 
-        refreshTokenService.deleteAllByUsername(username);
-        String token = refreshTokenService.createRefreshToken(username);
+        refreshTokenService.delete(user, request);
+        String token = refreshTokenService.createRefreshToken(user, request);
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("token", token);
 
         String jwtToken = jwtUtils.generateTokenFromUsername(username, claims);
 
-        return new AuthResponse(user.getId(), username, jwtToken,
-                user.getRole().getAuthority());
+        ResponseCookie jwtCookie = ResponseCookie.from("jwtToken", jwtToken).httpOnly(true).path("/").maxAge(Duration.ofDays(3)).build();
+        ResponseCookie userIdCookie = ResponseCookie.from("userId", String.valueOf(user.getId())).path("/").build();
+        ResponseCookie roleCookie = ResponseCookie.from("role", String.valueOf(user.getRole())).path("/").build();
+
+
+        return ResponseEntity.ok()
+                .headers(headers -> {
+                    headers.add(HttpHeaders.SET_COOKIE, jwtCookie.toString());
+                    headers.add(HttpHeaders.SET_COOKIE, userIdCookie.toString());
+                    headers.add(HttpHeaders.SET_COOKIE, roleCookie.toString());
+                })
+                .build();
     }
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/logout")
-    public void logout(Authentication authentication) {
+    public void logout(Authentication authentication, HttpServletRequest request) {
         log.info("Logout user {}", authentication);
-        refreshTokenService.deleteAllByUsername(userService.findUserByAuth(authentication).getUsername());
+        refreshTokenService.delete(userService.findUserByAuth(authentication), request);
     }
 }

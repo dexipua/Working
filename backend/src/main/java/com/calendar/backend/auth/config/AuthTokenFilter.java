@@ -2,7 +2,9 @@ package com.calendar.backend.auth.config;
 
 import com.calendar.backend.auth.models.RefreshToken;
 import com.calendar.backend.auth.services.impl.RefreshTokenServiceImpl;
+import com.calendar.backend.models.User;
 import com.calendar.backend.services.impl.UserServiceImpl;
+import com.calendar.backend.services.inter.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,10 +28,10 @@ import java.util.Optional;
 public class AuthTokenFilter extends OncePerRequestFilter {
 
     private final RefreshTokenServiceImpl refreshTokenService;
-    private final UserServiceImpl userDetailsService;
+    private final UserService userDetailsService;
     private final JwtUtils jwtUtils;
 
-    public AuthTokenFilter(JwtUtils jwtUtils, UserServiceImpl userDetailsService,
+    public AuthTokenFilter(JwtUtils jwtUtils, UserService userDetailsService,
                            RefreshTokenServiceImpl refreshTokenService) {
         this.jwtUtils = jwtUtils;
         this.userDetailsService = userDetailsService;
@@ -58,11 +60,12 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
                 log.info("Auth: Valid JWT token");
                 String username = jwtUtils.getSubject(token);
+                User user = userDetailsService.findByEmailForServices(username);
 
                 if (jwtUtils.isTokenExpired(token)) {
                     log.warn("Auth: Access token expired, refreshing...");
 
-                    Optional<RefreshToken> refreshToken = refreshTokenService.findByUsername(username);
+                    Optional<RefreshToken> refreshToken = refreshTokenService.findByUser(user, request);
 
                     if (refreshToken.isEmpty() || jwtUtils.isRefreshTokenExpired(refreshToken.get())) {
                         log.error("Auth: Refresh token is expired or missing");

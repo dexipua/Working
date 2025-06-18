@@ -1,5 +1,6 @@
 package com.calendar.backend.auth.models;
 
+import com.calendar.backend.models.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,11 @@ public class RefreshToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String token;
-    private String username;
-    private LocalDateTime expirationTimestamp;
+    @ManyToOne
+    private User user;
+    private LocalDateTime creatingTime;
+    private LocalDateTime expirationTime;
+    private String ipAddress;
+    private String userAgent;
+    private String device;
 }
