@@ -1,12 +1,13 @@
-# Stage 1: Build
-FROM node:18
+FROM node:18-alpine
 
 WORKDIR /app
-COPY . .
+
+COPY package*.json ./
+
 RUN npm install
 
-# Відкриваємо порт для dev server
+COPY . .
+
 EXPOSE 3000
 
-# Запускаємо React development server
-CMD ["npm", "start"]
+CMD ["npm", "start", "--", "--host", "0.0.0.0", "--port", "3000", "--disableHostCheck", "true"]
