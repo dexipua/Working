@@ -7,6 +7,7 @@ import com.calendar.backend.services.impl.UserServiceImpl;
 import com.calendar.backend.services.inter.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -17,10 +18,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -45,49 +49,52 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+        log.info("PATH: {}", request.getServletPath());
+        if (request.getServletPath().equals("/api/auth/login") || request.getServletPath().equals("/api/auth/logout")) {
+            log.info("HERE!");
+            filterChain.doFilter(request, response);
+            return;
+        }
         try {
-            log.info("Auth: Processing request");
-            if (hasAuthorizationBearer(request)) {
-                log.info("Auth: Processing JWT token");
-                String token = getAccessToken(request);
+            log.info("Auth: Processing JWT token");
+            String token = getAccessToken(request);
+            log.info("AUTH:!!!!!!:::   {}", token);
+            if (!jwtUtils.validateToken(token, request)) {
+                log.error("Auth: Invalid JWT token");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                setHeaders(response);
+                return;
+            }
 
-                if (!jwtUtils.validateToken(token, request)) {
-                    log.error("Auth: Invalid JWT token");
+            log.info("Auth: Valid JWT token");
+            String username = jwtUtils.getSubject(token);
+            User user = userDetailsService.findByEmailForServices(username);
+
+            if (jwtUtils.isTokenExpired(token)) {
+                log.warn("Auth: Access token expired, refreshing...");
+
+                Optional<RefreshToken> refreshToken = refreshTokenService.findByUser(user, request);
+
+                if (refreshToken.isEmpty() || jwtUtils.isRefreshTokenExpired(refreshToken.get())) {
+                    log.error("Auth: Refresh token is expired or missing");
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     setHeaders(response);
                     return;
                 }
 
-                log.info("Auth: Valid JWT token");
-                String username = jwtUtils.getSubject(token);
-                User user = userDetailsService.findByEmailForServices(username);
+                log.info("Auth: Refresh token is valid, refreshing access token");
 
-                if (jwtUtils.isTokenExpired(token)) {
-                    log.warn("Auth: Access token expired, refreshing...");
+                String newAccessToken = jwtUtils.refreshAccessToken(username, refreshToken.get().getToken());
+                response.setStatus(498);
+                setHeaders(response);
 
-                    Optional<RefreshToken> refreshToken = refreshTokenService.findByUser(user, request);
+                response.setHeader("Set-Cookie", "accessToken=" + newAccessToken + ";Path=/;");
+                response.setCharacterEncoding("UTF-8");
 
-                    if (refreshToken.isEmpty() || jwtUtils.isRefreshTokenExpired(refreshToken.get())) {
-                        log.error("Auth: Refresh token is expired or missing");
-                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        setHeaders(response);
-                        return;
-                    }
-
-                    log.info("Auth: Refresh token is valid, refreshing access token");
-
-                    String newAccessToken = jwtUtils.refreshAccessToken(username, refreshToken.get().getToken());
-                    response.setStatus(498);
-                    setHeaders(response);
-
-                    response.setHeader("Set-Cookie", "accessToken=" + newAccessToken + ";Path=/;");
-                    response.setCharacterEncoding("UTF-8");
-
-                    return;
-                } else {
-                    log.info("Auth: Access token is valid and doesn`t expire");
-                    setAuthenticationContext(token, request);
-                }
+                return;
+            } else {
+                log.info("Auth: Access token is valid and doesn`t expire");
+                setAuthenticationContext(token, request);
             }
         } catch (Exception e) {
             log.error("Auth: An error occurred during JWT token processing", e);
@@ -97,7 +104,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private void setHeaders(HttpServletResponse response){
+    private void setHeaders(HttpServletResponse response) {
         response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
         response.setHeader("Access-Control-Allow-Credentials", "true");
         response.setHeader("Access-Control-Allow-Headers", "*");
@@ -105,8 +112,23 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     }
 
     private String getAccessToken(HttpServletRequest request) {
-        String header = request.getHeader("Authorization");
-        return header.substring(7);
+        return getCookie(request.getCookies(), "jwtToken");
+    }
+
+    private String getCookie(Cookie[] cookies, String name) {
+        if(cookies != null) {
+            log.info("COOKIES: " + Arrays.stream(cookies).map(cookie -> cookie.getName() + ":" + cookie.getValue()).collect(Collectors.joining(", ")));
+        } else {
+            log.info("COOKIES: NULL!");
+        }
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals(name)) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     private boolean hasAuthorizationBearer(HttpServletRequest request) {

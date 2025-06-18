@@ -7,6 +7,7 @@ import com.calendar.backend.auth.services.impl.RefreshTokenServiceImpl;
 import com.calendar.backend.dto.wrapper.StringRequest;
 import com.calendar.backend.models.User;
 import com.calendar.backend.services.inter.UserService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -22,8 +23,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -47,7 +51,7 @@ public class AuthController {
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/login")
     public ResponseEntity<Void> login(@RequestBody @Valid LogInRequest loginRequest,
-                      HttpServletRequest request, HttpServletResponse response) {
+                                      HttpServletRequest request) {
         log.info("Login user {}", loginRequest);
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -55,7 +59,7 @@ public class AuthController {
                         loginRequest.getPassword()));
         User user = (User) authentication.getPrincipal();
 
-        String username =user.getUsername();
+        String username = user.getUsername();
 
         refreshTokenService.delete(user, request);
         String token = refreshTokenService.createRefreshToken(user, request);
@@ -72,17 +76,45 @@ public class AuthController {
 
         return ResponseEntity.ok()
                 .headers(headers -> {
-                    headers.add(HttpHeaders.SET_COOKIE, jwtCookie.toString());
-                    headers.add(HttpHeaders.SET_COOKIE, userIdCookie.toString());
-                    headers.add(HttpHeaders.SET_COOKIE, roleCookie.toString());
+                    headers.put(HttpHeaders.SET_COOKIE, List.of(
+                            jwtCookie.toString(),
+                            userIdCookie.toString(),
+                            roleCookie.toString()
+                    ));
                 })
+                .build();
+
+    }
+    private String getCookie(Cookie[] cookies, String name) {
+        if(cookies != null) {
+            log.info("COOKIES: " + Arrays.stream(cookies).map(cookie -> cookie.getName() + ":" + cookie.getValue()).collect(Collectors.joining(", ")));
+        } else {
+            log.info("COOKIES: NULL!");
+        }
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals(name)) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest request) {
+        refreshTokenService.delete(userService.findByIdForServices(Long.parseLong(getCookie(request.getCookies(), "userId"))), request);
+
+
+        return ResponseEntity.ok()
+                .headers(headers -> headers.put(HttpHeaders.SET_COOKIE, List.of(deleteCookie("jwtToken").toString(), deleteCookie("userId").toString(), deleteCookie("role").toString())))
                 .build();
     }
 
-    @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/logout")
-    public void logout(Authentication authentication, HttpServletRequest request) {
-        log.info("Logout user {}", authentication);
-        refreshTokenService.delete(userService.findUserByAuth(authentication), request);
+    private ResponseCookie deleteCookie(String name) {
+        return ResponseCookie.from(name, "")
+                .path("/")
+                .maxAge(0)
+                .build();
     }
 }

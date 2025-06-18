@@ -20,9 +20,6 @@ const UserView =
          user,
          handleUpdate,
          handleUpdatePassword,
-         visitedEventsCount,
-         completedTasksCount,
-         writtenCommentsCount
      }) => {
         const isMyUser = user.id.toString() === Cookies.get("userId");
 
@@ -43,17 +40,7 @@ const UserView =
                             handleUpdate={handleUpdate}
                             handleUpdatePassword={handleUpdatePassword}
                             isMyUser={isMyUser}
-                            visitedEventsCount={visitedEventsCount}
-                            completedTasksCount={completedTasksCount}
-                            writtenCommentsCount={writtenCommentsCount}
                         />
-                        <Box sx={{
-                            border: '1px solid #ddd',
-                            padding: '10px',
-                            borderRadius: "10px",
-                        }}>
-                            <CalendarContent userId={user.id}/>
-                        </Box>
                     </Box>
 
                 </Box>
@@ -94,23 +81,7 @@ const UserDataBox =
             },
         ]
 
-        const statisticsList = [
-            {
-                icon: <SpaceDashboardIcon color="primary"/>,
-                label: "Events visited:",
-                value: visitedEventsCount.toString()
-            },
-            {
-                icon: <AssignmentTurnedInIcon color="primary"/>,
-                label: "Tasks completed:",
-                value: `${completedTasksCount.countCompleted}/${completedTasksCount.countAll}`
-            },
-            {
-                icon: <CommentIcon color="primary"/>,
-                label: "Comments written:",
-                value: writtenCommentsCount
-            },
-        ]
+
 
         return (
             <Box sx={{padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
@@ -153,13 +124,6 @@ const UserDataBox =
                         <Options optionsList={optionList}/>
                     </Box>
 
-
-                    <Box sx={{display: 'flex', flexDirection: 'column'}}>
-                        <Typography mt={2} sx={{fontWeight: "bold", textAlign: 'center'}}>
-                            Statistics:
-                        </Typography>
-                        <Options optionsList={statisticsList} textAlign="center"/>
-                    </Box>
 
                     <Box sx={{display: 'flex', flexDirection: 'column'}}>
                         <Typography mt={2} sx={{fontWeight: "bold", textAlign: 'center'}}>

@@ -26,14 +26,8 @@ const ProfileContent = () => {
         const fetchData = async () => {
             try {
                 const response1 = await UserService.getMyUser();
-                const response2 = await EventService.getPastEventCountByUser(myId)
-                const response3 = await TaskService.countAllUserTasks(myId)
-                const response4 = await CommentService.getUserCommentsCount(myId)
 
                 setUser(response1);
-                setVisitedEventsCount(response2.count);
-                setCompletedTasksCount(response3);
-                 setWrittenCommentsCount(response4.count);
             } catch (error) {
                 setError(error);
             } finally {
@@ -76,9 +70,6 @@ const ProfileContent = () => {
             handleUpdate={handleUpdate}
             user={user}
             handleUpdatePassword={handleUpdatePassword}
-            visitedEventsCount={visitedEventsCount}
-            completedTasksCount={completedTasksCount}
-            writtenCommentsCount={writtenCommentsCount}
         />
     );
 };

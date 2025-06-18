@@ -8,16 +8,6 @@ export const client = axios.create({
     withCredentials: true,
 });
 
-client.interceptors.request.use(
-    config => {
-        const token = Cookies.get("accessToken");
-        if (token) {
-            config.headers["Authorization"] = `Bearer ${token}`;
-        }
-        return config;
-    },
-    error => Promise.reject(error)
-);
 
 client.interceptors.response.use(
     response => response,

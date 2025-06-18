@@ -8,8 +8,8 @@ import {useError} from "../../contexts/ErrorContext";
 
 const Login = () => {
     const {showError} = useError()
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('john.doe@example.com');
+    const [password, setPassword] = useState('passWord1');
 
     const [errorMessages, setErrorMessages] = useState([]);
 
@@ -20,7 +20,7 @@ const Login = () => {
         setErrorMessages([])
         try {
             await AuthService.login(email, password);
-            navigate("/");
+            navigate("/profile");
         } catch (error) {
             showError(error);
         }
