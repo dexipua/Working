@@ -8,6 +8,8 @@ services:
     depends_on:
       - db
     environment:
+      - EMAIL_ADDRESS=${EMAIL_ADDRESS}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
       - DB_URL=jdbc:postgresql://db:5432/db
       - DB_USERNAME=postgres
       - DB_PASSWORD=password

@@ -3,10 +3,7 @@ import Loading from "../../../../layouts/Loading";
 import {Typography} from "@mui/material";
 import UserView from "../UserView";
 import UserService from "../../../../../services/base/ext/UserService";
-import EventService from "../../../../../services/base/ext/EventService";
 import Cookies from "js-cookie";
-import TaskService from "../../../../../services/base/ext/TaskService";
-import CommentService from "../../../../../services/base/ext/CommentService";
 import {useError} from "../../../../../contexts/ErrorContext";
 
 const ProfileContent = () => {

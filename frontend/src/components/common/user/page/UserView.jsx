@@ -6,7 +6,6 @@ import Typography from "@mui/material/Typography";
 import TextUtils from "../../../../utils/TextUtils";
 import Options from "../../../layouts/Options";
 import UpdatePasswordDialog from "../password/UpdatePasswordDialog";
-import CalendarContent from "../../event/calendar/CalendarContent";
 import Cookies from "js-cookie";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import DateUtils from "../../../../utils/DateUtils";

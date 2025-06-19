@@ -4,9 +4,6 @@ import {Typography} from "@mui/material";
 import UserView from "../UserView";
 import UserService from "../../../../../services/base/ext/UserService";
 import {useParams} from "react-router-dom";
-import EventService from "../../../../../services/base/ext/EventService";
-import TaskService from "../../../../../services/base/ext/TaskService";
-import CommentService from "../../../../../services/base/ext/CommentService";
 import {useError} from "../../../../../contexts/ErrorContext";
 
 const UserContainer = () => {
@@ -26,14 +23,8 @@ const UserContainer = () => {
         const fetchData = async () => {
             try {
                 const response1 = await UserService.getUser(id);
-                const response2 = await EventService.getPastEventCountByUser(id)
-                const response3 = await TaskService.countAllUserTasks(id)
-                const response4 = await CommentService.getUserCommentsCount(id)
 
                 setUser(response1);
-                setVisitedEventsCount(response2.count);
-                setCompletedTasksCount(response3);
-                setWrittenCommentsCount(response4.count);
             } catch (error) {
                 setError(error);
             } finally {
