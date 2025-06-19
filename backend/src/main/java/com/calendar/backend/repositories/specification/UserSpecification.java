@@ -44,4 +44,10 @@ public class UserSpecification {
         return (root, query, cb) ->
                 cb.notEqual(root.get("id"), userId);
     }
+
+    public static Specification<User> notIncludeDeleted(){
+        String emailOfDeletedUser = "!deleted-user!@deleted.com";
+        return (root, query, cb) ->
+                cb.notEqual(root.get("email"), emailOfDeletedUser);
+    }
 }

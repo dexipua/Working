@@ -20,7 +20,7 @@ import java.util.Map;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class EmailServiceImpl implements EmailService {
+public class EmailServiceImpl implements EmailService { //TODO LOGGING + VERIFICATION
 
     private final JavaMailSender javaMailSender;
     private final Configuration freemarkerConfig;
@@ -28,6 +28,7 @@ public class EmailServiceImpl implements EmailService {
     @Async
     @Override
     public void sendClaimApprovedEmail(String recipient) {
+
         String htmlContent = generateEmailContent("email-template.ftl", Map.of(
                 "header", "Application Approved",
                 "content", "Congratulations! Your application has been approved."

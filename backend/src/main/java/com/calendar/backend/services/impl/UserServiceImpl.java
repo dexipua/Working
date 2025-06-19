@@ -112,7 +112,8 @@ public class UserServiceImpl implements UserService {
 
         Page<User> users = userRepository.findAll(
                 UserSpecification.filterUsers(filters)
-                        .and(UserSpecification.notUser(user.getId())),
+                        .and(UserSpecification.notUser(user.getId()))
+                        .and(UserSpecification.notIncludeDeleted()),
                 PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "lastName", "firstName")));
 
         return createResponse(users);

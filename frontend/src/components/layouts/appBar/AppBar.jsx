@@ -41,7 +41,6 @@ const AppBar = () => {
     const role = Cookies.get("role");
 
     const buttons = [
-        {text: "Home", link: "/"},
         {text: "Users", link: "/users"},
     ]
 
