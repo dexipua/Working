@@ -45,11 +45,10 @@ public class AuthController {
     }
 
 
-
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/regis")
     public ResponseEntity<Void> regis(@RequestBody @Valid UserCreateRequest regisRequest,
-                                      HttpServletRequest request){
+                                      HttpServletRequest request) {
         log.info("AuthController: Regis user {}", regisRequest);
 
         User user = userService.findByIdForServices(userService.create(regisRequest).getId());
@@ -77,8 +76,7 @@ public class AuthController {
     public ResponseEntity<Void> logout(HttpServletRequest request) {
         log.info("AuthController: Logout user");
         refreshTokenService.delete(
-                userService.findByIdForServices(
-                        Long.parseLong(Objects.requireNonNull(CookieUtil.getCookie(request.getCookies(), "userId")))), request);
+                Long.parseLong(Objects.requireNonNull(CookieUtil.getCookie(request.getCookies(), "userId"))), request);
 
 
         return ResponseEntity.ok()
@@ -90,12 +88,12 @@ public class AuthController {
                 .build();
     }
 
-    private ResponseEntity<Void> creatingTokensAndCookies(User user, HttpServletRequest request){
+    private ResponseEntity<Void> creatingTokensAndCookies(User user, HttpServletRequest request) {
         log.info("AuthController: creating tokens and cookies for user: {}", user);
 
         String username = user.getUsername();
 
-        refreshTokenService.delete(user, request);
+        refreshTokenService.delete(user.getId(), request);
         String token = refreshTokenService.createRefreshToken(user, request);
 
         Map<String, Object> claims = new HashMap<>();
@@ -106,7 +104,7 @@ public class AuthController {
         return createCookies(user, jwtToken);
     }
 
-    private ResponseEntity<Void> createCookies(User user, String token){
+    private ResponseEntity<Void> createCookies(User user, String token) {
         ResponseCookie jwtCookie = ResponseCookie.from("jwtToken", token).httpOnly(true).path("/").maxAge(Duration.ofDays(3)).build();
         ResponseCookie userIdCookie = ResponseCookie.from("userId", String.valueOf(user.getId())).path("/").build();
         ResponseCookie roleCookie = ResponseCookie.from("role", String.valueOf(user.getRole())).path("/").build();

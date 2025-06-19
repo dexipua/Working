@@ -52,15 +52,15 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     }
 
     @Transactional
-    public void delete(User user, HttpServletRequest request) {
-        log.info("delete a refresh tokens for user: {}", user.getEmail());
-        repository.deleteByUser_IdAndIpAddress(user.getId(), extractClientIp(request));
+    public void delete(Long userId, HttpServletRequest request) {
+        log.info("delete a refresh tokens for user with id: {}", userId);
+        repository.deleteByUser_IdAndIpAddress(userId, extractClientIp(request));
     }
 
 
-    public Optional<RefreshToken> findByUser(User user, HttpServletRequest request) {
-        log.info("try to find refresh token by username: {}", user.getEmail());
-        return repository.findByUser_IdAndIpAddress(user.getId(), extractClientIp(request));
+    public Optional<RefreshToken> findByUser(Long userId, HttpServletRequest request) {
+        log.info("try to find refresh token by user id: {}", userId);
+        return repository.findByUser_IdAndIpAddress(userId, extractClientIp(request));
     }
 
     private String extractClientIp(HttpServletRequest request) {

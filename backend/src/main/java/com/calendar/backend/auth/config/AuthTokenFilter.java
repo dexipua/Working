@@ -76,7 +76,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             if (jwtUtils.isTokenExpired(token)) {
                 log.warn("Auth: Access token expired, refreshing...");
 
-                Optional<RefreshToken> refreshToken = refreshTokenService.findByUser(user, request);
+                Optional<RefreshToken> refreshToken = refreshTokenService.findByUser(user.getId(), request);
 
                 if (refreshToken.isEmpty() || jwtUtils.isRefreshTokenExpired(refreshToken.get())) {
                     log.error("Auth: Refresh token is expired or missing");

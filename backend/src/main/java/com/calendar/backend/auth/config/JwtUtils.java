@@ -121,7 +121,7 @@ public class JwtUtils {
             String username = this.getSubject(token);
 
             Map<String, Object> claimsToCheck = new HashMap<>();
-            claimsToCheck.put("token", refreshTokenService.findByUser(userService.findByEmailForServices(username), request).orElseThrow(() ->
+            claimsToCheck.put("token", refreshTokenService.findByUser(userService.findByEmailForServices(username).getId(), request).orElseThrow(() ->
                     new EntityNotFoundException("Can`t find refresh token to validate jwt")).getToken());
 
             for (Map.Entry<String, Object> entry : claimsToCheck.entrySet()) {

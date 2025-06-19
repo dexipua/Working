@@ -8,6 +8,6 @@ import java.util.Optional;
 
 public interface RefreshTokenService {
     String createRefreshToken(User user, HttpServletRequest request);
-    void delete(User user, HttpServletRequest request);
-    Optional<RefreshToken> findByUser(User user, HttpServletRequest request);
+    void delete(Long userId, HttpServletRequest request);
+    Optional<RefreshToken> findByUser(Long userId, HttpServletRequest request);
 }
