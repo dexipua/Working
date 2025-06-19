@@ -42,23 +42,25 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         this.refreshTokenService = refreshTokenService;
     }
 
-
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        log.info("PATH: {}", request.getServletPath());
-        if (request.getServletPath().equals("/api/auth/login") || request.getServletPath().equals("/api/auth/logout")) {
-            log.info("HERE!");
-            filterChain.doFilter(request, response);
-            return;
-        }
+        log.info("Auth: Path - {}", request.getServletPath());
         try {
+            if (request.getServletPath().equals("/api/auth/login")
+                    || request.getServletPath().equals("/api/auth/logout")) {
+                log.info("Auth: Exception path!");
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             log.info("Auth: Processing JWT token");
             String token = getAccessToken(request);
-            log.info("AUTH:!!!!!!:::   {}", token);
+            log.info("AUTH: Token - {}", token);
+
             if (!jwtUtils.validateToken(token, request)) {
                 log.error("Auth: Invalid JWT token");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -93,12 +95,13 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
                 return;
             } else {
-                log.info("Auth: Access token is valid and doesn`t expire");
+                log.info("Auth: Access token is valid and does`t expire");
                 setAuthenticationContext(token, request);
             }
         } catch (Exception e) {
             log.error("Auth: An error occurred during JWT token processing", e);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            setHeaders(response);
             return;
         }
         filterChain.doFilter(request, response);
@@ -112,28 +115,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     }
 
     private String getAccessToken(HttpServletRequest request) {
-        return getCookie(request.getCookies(), "jwtToken");
-    }
-
-    private String getCookie(Cookie[] cookies, String name) {
-        if(cookies != null) {
-            log.info("COOKIES: " + Arrays.stream(cookies).map(cookie -> cookie.getName() + ":" + cookie.getValue()).collect(Collectors.joining(", ")));
-        } else {
-            log.info("COOKIES: NULL!");
-        }
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals(name)) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
-    }
-
-    private boolean hasAuthorizationBearer(HttpServletRequest request) {
-        String header = request.getHeader("Authorization");
-        return !ObjectUtils.isEmpty(header) && header.startsWith("Bearer ");
+        return CookieUtil.getCookie(request.getCookies(), "jwtToken");
     }
 
     private void setAuthenticationContext(String token, HttpServletRequest request) {

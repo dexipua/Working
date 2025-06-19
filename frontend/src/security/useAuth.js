@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 
 export const useAuth = () => {
     const isAuthenticated = () => {
-        return true; // TODO
+        return Cookies.get('userId') !== undefined;
     };
 
     return { isAuthenticated};

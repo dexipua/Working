@@ -42,15 +42,10 @@ function App() {
 
     const routes = [
         {path: "", element: <MainPage/>},
-        {path: "/events", element: <Page><Events/></Page>},
         {path: "/users", element: <Page><Users/></Page>},
-        {path: "/tasks", element: <Page><Tasks/></Page>},
-        {path: "/events/:id", element: <Page><EventPage/></Page>},
         {path: "/profile", element: <ProfilePage/>},
         {path: "/users/:id", element: <Page><UserPage/></Page>},
-        {path: "/tasks/:id", element: <TaskPage/>},
-        {path: "/notifications", element: <Page><NotificationsPage/></Page>},
-        {path: "/invitations", element: <InvitationsPage/>},
+
         {
             path: "*", element:
                 <Page>
@@ -59,7 +54,6 @@ function App() {
                     </Typography>
                 </Page>
         },
-        role === 'TEACHER' && {path: "/teacherPanel", element: <TeacherPanelPage/>}
 
     ];
 

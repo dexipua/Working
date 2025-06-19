@@ -23,4 +23,5 @@ public interface UserService extends UserDetailsService {
     User findUserByAuth(Authentication authentication);
     User findByIdForServices(long id);
     User findByEmailForServices(String email);
+    boolean isNotExistByEmail(String email);
 }

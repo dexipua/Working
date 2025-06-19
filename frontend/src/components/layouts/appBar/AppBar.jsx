@@ -44,14 +44,8 @@ const AppBar = () => {
 
     const buttons = [
         {text: "Home", link: "/"},
-        {text: "Events", link: "/events"},
-        {text: "Tasks", link: "/tasks"},
         {text: "Users", link: "/users"},
     ]
-
-    if (role === "TEACHER") {
-        buttons.push({text: "Teacher panel", link: "/teacherPanel"})
-    }
 
     return (
         <MuiAppBar position="absolute" sx={appBarStyles}>
@@ -73,8 +67,6 @@ const AppBar = () => {
                 </Stack>
 
                 <Box sx={toolbarIconsContainer}>
-                    <NotificationsButton/>
-                    <InvitationsButton/>
                     <AccountMenu/>
                 </Box>
 
