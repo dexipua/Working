@@ -3,11 +3,10 @@ package com.calendar.backend.auth.controllers;
 import com.calendar.backend.auth.config.CookieUtil;
 import com.calendar.backend.auth.config.JwtUtils;
 import com.calendar.backend.auth.dto.LogInRequest;
-import com.calendar.backend.auth.services.impl.EmailServiceImpl;
-import com.calendar.backend.auth.services.impl.RefreshTokenServiceImpl;
 import com.calendar.backend.auth.services.inter.EmailService;
+import com.calendar.backend.auth.services.inter.RefreshTokenService;
+import com.calendar.backend.auth.services.inter.VerificationCodeService;
 import com.calendar.backend.dto.user.UserCreateRequest;
-import com.calendar.backend.dto.user.UserFullResponse;
 import com.calendar.backend.dto.wrapper.StringRequest;
 import com.calendar.backend.models.User;
 import com.calendar.backend.services.inter.UserService;
@@ -34,10 +33,11 @@ import java.util.*;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
-    private final RefreshTokenServiceImpl refreshTokenService;
+    private final RefreshTokenService refreshTokenService;
+    private final VerificationCodeService verificationCodeService;
     private final UserService userService;
     private final JwtUtils jwtUtils;
-    private final EmailServiceImpl emailService;
+    private final EmailService emailService;
 
 
     @ResponseStatus(HttpStatus.OK)
@@ -59,6 +59,20 @@ public class AuthController {
         return creatingTokensAndCookies(user, request);
     }
 
+    @GetMapping("/getCode")
+    @ResponseStatus(HttpStatus.OK)
+    public void getCode(StringRequest email) {
+        log.info("AuthController: get code for user {}", email.getText());
+        emailService.sendCodeEmail(email.getText(), verificationCodeService.createVerificationCode(email.getText()));
+    }
+
+    @GetMapping("/checkCode")
+    @ResponseStatus(HttpStatus.OK)
+    public boolean checkCode(@RequestParam("email") String email, @RequestParam("code") String code) {
+        return verificationCodeService.checkVerificationCode(email, code);
+    }
+
+
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/login")
     public ResponseEntity<Void> login(@RequestBody @Valid LogInRequest loginRequest,
@@ -70,7 +84,6 @@ public class AuthController {
                         loginRequest.getUsername(),
                         loginRequest.getPassword()));
         User user = (User) authentication.getPrincipal();
-        emailService.sendSuccessfullyCreatedAccountEmail("bulakovskijvladislav@gmail.com");
         return creatingTokensAndCookies(user, request);
     }
 

@@ -17,6 +17,7 @@ import './index.css';
 import PrivateRoute from "./security/PrivateRoute";
 import {ErrorProvider} from "./contexts/ErrorContext";
 import Cookies from "js-cookie";
+import FilePage from "./components/pages/file/FilePage";
 
 const InitNavigation = ({children}) => {
     const navigate = useNavigate();
@@ -30,12 +31,11 @@ const InitNavigation = ({children}) => {
 
 function App() {
 
-    const role = Cookies.get('role');
-
     const routes = [
         {path: "/users", element: <Page><Users/></Page>},
         {path: "/profile", element: <ProfilePage/>},
         {path: "/users/:id", element: <Page><UserPage/></Page>},
+        {path: "/files/:userId", element: <Page><FilePage/></Page>},
 
         {
             path: "*", element:

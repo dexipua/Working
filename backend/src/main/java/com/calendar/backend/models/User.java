@@ -16,7 +16,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = "events")
+@ToString
 @EqualsAndHashCode
 public class User implements UserDetails {
     @Id

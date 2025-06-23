@@ -27,56 +27,17 @@ public class EmailServiceImpl implements EmailService { //TODO LOGGING + VERIFIC
 
     @Async
     @Override
-    public void sendClaimApprovedEmail(String recipient) {
+    public void sendCodeEmail(String recipient, String code) {
 
         String htmlContent = generateEmailContent("email-template.ftl", Map.of(
                 "header", "Application Approved",
-                "content", "Congratulations! Your application has been approved."
+                "content", "Your code is " + code
         ));
-        sendEmail(recipient, "Application approved!", htmlContent);
+        sendEmail(recipient, htmlContent);
     }
 
-    @Async
-    @Override
-    public void sendClaimRejectedEmail(String recipient) {
-        String htmlContent = generateEmailContent("email-template.ftl", Map.of(
-                "header", "Application Rejected",
-                "content", "Unfortunately, your application has been rejected."
-        ));
-        sendEmail(recipient, "Application Rejected!", htmlContent);
-    }
-
-    @Async
-    @Override
-    public void sendClaimRequestEmail(String recipient) {
-        String htmlContent = generateEmailContent("email-template.ftl", Map.of(
-                "header", "Application Under Review",
-                "content", "Your application has been received and is currently under review. You will be notified once a decision is made."
-        ));
-        sendEmail(recipient, "Application Under Review!", htmlContent);
-    }
-
-    @Async
-    @Override
-    public void sendSuccessfullyCreatedAccountEmail(String recipient) {
-        String htmlContent = generateEmailContent("email-template.ftl", Map.of(
-                "header", "Account Created Automatically",
-                "content", "Your account has been created automatically."
-        ));
-        sendEmail(recipient, "Account Created Automatically!", htmlContent);
-    }
-
-    @Async
-    @Override
-    public void sendNewClaimEmail(String recipient) {
-        String htmlContent = generateEmailContent("email-template.ftl", Map.of(
-                "header", "New Application",
-                "content", "A new application has been submitted and is awaiting review. Please check the system for details."
-        ));
-        sendEmail(recipient, "New Application!", htmlContent);
-    }
-
-    private void sendEmail(String recipient, String subject, String html) {
+    private void sendEmail(String recipient, String html) {
+        String subject = "Code sent!";
         MimeMessage message = javaMailSender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");

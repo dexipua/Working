@@ -38,10 +38,11 @@ const calendarTypographyStyles = {
 
 
 const AppBar = () => {
-    const role = Cookies.get("role");
+    const userId = Cookies.get("userId");
 
     const buttons = [
         {text: "Users", link: "/users"},
+        {text: "Files", link: "/files/" + userId }
     ]
 
     return (

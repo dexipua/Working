@@ -50,6 +50,11 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         log.info("Auth: Path - {}", request.getServletPath());
         try {
+            if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+                response.setStatus(HttpServletResponse.SC_OK);
+                return;
+            }
+
             if (request.getServletPath().equals("/api/auth/login")
                     || request.getServletPath().equals("/api/auth/regis")
                     || request.getServletPath().equals("/api/auth/logout")) {

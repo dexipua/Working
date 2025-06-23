@@ -14,11 +14,6 @@ class AuthService {
                 }, {
                     withCredentials: true
                 });
-
-            const accessToken = response.data.accessToken;
-            const role = response.data.role;
-            const userId = response.data.id;
-
             console.log(response.data)
         } catch (error) {
             throw error;

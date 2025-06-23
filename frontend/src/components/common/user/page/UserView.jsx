@@ -13,6 +13,7 @@ import EmailIcon from "@mui/icons-material/Email";
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import CommentIcon from '@mui/icons-material/Comment';
+import FileUploader from "../../../layouts/files/FileUploader";
 
 const UserView =
     ({
@@ -41,8 +42,9 @@ const UserView =
                             isMyUser={isMyUser}
                         />
                     </Box>
-
+                    <FileUploader />
                 </Box>
+
             </Box>
 
 
