@@ -42,7 +42,8 @@ const AppBar = () => {
 
     const buttons = [
         {text: "Users", link: "/users"},
-        {text: "Files", link: "/files/" + userId }
+        {text: "Files", link: "/files/" + userId },
+        {text: "Chats", link: "/chats"}
     ]
 
     return (

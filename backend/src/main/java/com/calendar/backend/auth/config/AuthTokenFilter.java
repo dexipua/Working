@@ -76,7 +76,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
             log.info("Auth: Valid JWT token");
             String username = jwtUtils.getSubject(token);
-            User user = userDetailsService.findByEmailForServices(username);
+            User user = userDetailsService.findUserByEmail(username);
 
             if (jwtUtils.isTokenExpired(token)) {
                 log.warn("Auth: Access token expired, refreshing...");

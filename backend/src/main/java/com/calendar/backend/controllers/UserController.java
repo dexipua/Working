@@ -5,9 +5,9 @@ import com.calendar.backend.dto.user.UserFullResponse;
 import com.calendar.backend.dto.user.UserListResponse;
 import com.calendar.backend.dto.user.UserUpdateRequest;
 import com.calendar.backend.dto.wrapper.PaginationListResponse;
-import com.calendar.backend.dto.wrapper.PasswordRequest;
 import com.calendar.backend.mappers.UserMapper;
-import com.calendar.backend.services.inter.*;
+import com.calendar.backend.models.User;
+import com.calendar.backend.services.inter.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,13 +27,13 @@ public class UserController {
     private final UserService userService;
     private final UserMapper userMapper;
 
-
     @PreAuthorize("hasRole('TEACHER')")
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     public UserFullResponse createUser(@Valid @RequestBody UserCreateRequest request) {
         log.info("Controller: Create user with body: {}", request);
-        return userService.create(request);
+        User user = userMapper.fromUserRequestToUser(request);
+        return userMapper.fromUserToUserResponse(userService.create(user));
     }
 
     @PreAuthorize("hasRole('TEACHER')")
@@ -43,7 +43,8 @@ public class UserController {
             @PathVariable Long id,
             @Valid @RequestBody UserUpdateRequest request) {
         log.info("Controller: Update user with id: {} with body: {}", id, request);
-        return userService.updateUser(request, id);
+        User user = userMapper.fromUserRequestToUser(request);
+        return userMapper.fromUserToUserResponse(userService.update(user, id));
     }
 
     @PutMapping("/update")
@@ -52,19 +53,9 @@ public class UserController {
             @RequestBody UserUpdateRequest request,
             Authentication auth) {
         log.info("Controller: Update my user with body: {}", request);
-        return userService.updateUser(
-                request,
-                userService.findUserByAuth(auth).getId()
-        );
-    }
-
-    @PutMapping("/update/password")
-    @ResponseStatus(HttpStatus.OK)
-    public boolean updateMyPassword(
-            @RequestBody PasswordRequest password,
-            Authentication auth) {
-        log.info("Controller: Update my password");
-        return userService.updatePassword(password, auth);
+        long userId = userService.findUserByAuth(auth).getId();
+        User user = userMapper.fromUserRequestToUser(request);
+        return userMapper.fromUserToUserResponse(userService.update(user, userId));
     }
 
     @PreAuthorize("hasRole('TEACHER')")
@@ -79,9 +70,8 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public UserFullResponse getUser(@PathVariable Long id) {
         log.info("Controller: Get user with id: {}", id);
-        return userService.findById(id);
+        return userMapper.fromUserToUserResponse(userService.findById(id));
     }
-
 
     @GetMapping("/my")
     @ResponseStatus(HttpStatus.OK)
@@ -102,6 +92,10 @@ public class UserController {
             Authentication auth
     ) {
         log.info("Controller: Get all users");
-        return userService.findAll(email, firstName, lastName, role, page, size, auth);
+        PaginationListResponse<User> users = userService.findAll(email, firstName, lastName, role, page, size, auth);
+        PaginationListResponse<UserListResponse> responses = new PaginationListResponse<>();
+        responses.setContent(users.getContent().stream().map(userMapper::fromUserToUserListResponse).toList());
+        responses.setTotalPages(users.getTotalPages());
+        return responses;
     }
 }

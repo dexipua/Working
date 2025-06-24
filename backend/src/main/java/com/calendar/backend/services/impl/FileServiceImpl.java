@@ -51,7 +51,7 @@ public class FileServiceImpl implements FileService {
         entity.setFileName(pre_UUID + realFileName);
         entity.setFileRealName(file.getOriginalFilename());
         entity.setFileHash(computedHash);
-        entity.setUser(userService.findByIdForServices(ownerId));
+        entity.setUser(userService.findById(ownerId));
         entity.setFileType(file.getContentType());
         entity.setFileSize(String.valueOf(file.getSize()));
         entity.setPath(publicUrl);

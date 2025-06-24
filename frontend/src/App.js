@@ -16,8 +16,9 @@ import {useEffect} from "react";
 import './index.css';
 import PrivateRoute from "./security/PrivateRoute";
 import {ErrorProvider} from "./contexts/ErrorContext";
-import Cookies from "js-cookie";
 import FilePage from "./components/pages/file/FilePage";
+import ChatsPage from "./components/pages/chat/ChatPages";
+import Chat from "./components/pages/chat/Chat"
 
 const InitNavigation = ({children}) => {
     const navigate = useNavigate();
@@ -36,6 +37,8 @@ function App() {
         {path: "/profile", element: <ProfilePage/>},
         {path: "/users/:id", element: <Page><UserPage/></Page>},
         {path: "/files/:userId", element: <Page><FilePage/></Page>},
+        {path: "/chats", element: <Page><ChatsPage/></Page> },
+        {path: "/chat/:chatId", element: <Page><Chat/></Page> },
 
         {
             path: "*", element:

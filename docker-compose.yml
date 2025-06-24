@@ -8,6 +8,7 @@ services:
     depends_on:
       - db
     environment:
+      - CLOUD_KEY=${CLOUD_KEY}
       - EMAIL_ADDRESS=${EMAIL_ADDRESS}
       - EMAIL_PASSWORD=${EMAIL_PASSWORD}
       - DB_URL=jdbc:postgresql://db:5432/db

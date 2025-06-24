@@ -16,6 +16,7 @@
     "@schedule-x/events-service": "^2.31.0",
     "@schedule-x/react": "^2.31.0",
     "@schedule-x/theme-default": "^2.31.0",
+    "@stomp/stompjs": "^7.1.1",
     "axios": "1.8.2",
     "cra-template": "1.2.0",
     "crypto-js": "^4.2.0",
@@ -31,6 +32,7 @@
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.1.5",
     "react-scripts": "5.0.1",
+    "sockjs-client": "^1.6.1",
     "web-vitals": "^4.2.4"
   },
   "scripts": {

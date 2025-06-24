@@ -8,6 +8,7 @@ import com.calendar.backend.auth.services.inter.RefreshTokenService;
 import com.calendar.backend.auth.services.inter.VerificationCodeService;
 import com.calendar.backend.dto.user.UserCreateRequest;
 import com.calendar.backend.dto.wrapper.StringRequest;
+import com.calendar.backend.mappers.UserMapper;
 import com.calendar.backend.models.User;
 import com.calendar.backend.services.inter.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,6 +39,7 @@ public class AuthController {
     private final UserService userService;
     private final JwtUtils jwtUtils;
     private final EmailService emailService;
+    private final UserMapper userMapper;
 
 
     @ResponseStatus(HttpStatus.OK)
@@ -54,7 +56,7 @@ public class AuthController {
                                       HttpServletRequest request) {
         log.info("AuthController: Regis user {}", regisRequest);
 
-        User user = userService.findByIdForServices(userService.create(regisRequest).getId());
+        User user = userService.findById(userService.create(userMapper.fromUserRequestToUser(regisRequest)).getId());
 
         return creatingTokensAndCookies(user, request);
     }
