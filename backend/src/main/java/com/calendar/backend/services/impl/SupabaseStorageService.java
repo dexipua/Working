@@ -23,9 +23,7 @@ public class SupabaseStorageService {
 
     public String uploadFile(String fileName, String pre_UUID, byte[] fileBytes, String contentType) {
         log.info("Service: Upload to cloud file with name {}", fileName);
-        fileName = Normalizer.normalize(fileName, Normalizer.Form.NFD)
-                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
-        fileName = fileName.replaceAll("[^a-zA-Z0-9._-]", "_");
+
         fileName = pre_UUID + fileName;
         HttpResponse<String> response = Unirest.put(supabaseUrl + "/storage/v1/object/" + bucket + "/" + fileName)
                 .header("apikey", supabaseKey)

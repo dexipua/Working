@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.Normalizer;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -44,6 +45,10 @@ public class FileServiceImpl implements FileService {
         if (!computedHash.equalsIgnoreCase(frontendHash)) {
             throw new IllegalArgumentException("Hash mismatch – файл було пошкоджено або змінено");
         }
+
+        realFileName = Normalizer.normalize(realFileName, Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        realFileName = realFileName.replaceAll("[^a-zA-Z0-9._-]", "_");
 
         String publicUrl = supabaseStorageService.uploadFile(realFileName, pre_UUID, bytes, file.getContentType());
 
@@ -75,6 +80,7 @@ public class FileServiceImpl implements FileService {
         log.info("Service: Delete file with id {}", id);
         File file = fileRepository.findById(id).orElseThrow();
         String filename = file.getFileName();
+        log.info("Service: Delete file with id {}", filename);
         supabaseStorageService.deleteFile(filename);
         fileRepository.deleteById(id);
     }
