@@ -5,6 +5,10 @@ import com.calendar.backend.auth.services.impl.RefreshTokenServiceImpl;
 import com.calendar.backend.services.impl.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.keycloak.OAuth2Constants;
+import org.keycloak.admin.client.KeycloakBuilder;
+import org.keycloak.admin.client.resource.RealmResource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -26,6 +30,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 
@@ -39,56 +44,41 @@ public class SecurityConfig {
 
     private final RefreshTokenServiceImpl refreshTokenService;
     private final UserServiceImpl userDetailsService;
-    private final JwtUtils jwtUtils;
-
-
-    @Bean
-    public static PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthTokenFilter authJwtTokenFilter() {
-        return new AuthTokenFilter(jwtUtils, userDetailsService, refreshTokenService);
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration
-    ) throws Exception {
-        return configuration.getAuthenticationManager();
-    }
+    @Value("${realm}")
+    private String realm;
+    @Value("${keycloak-url}")
+    private String keycloakUrl;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
+        return http
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(a -> a
-                        .requestMatchers("/api/auth/regis").permitAll()
-                        .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/logout").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .anyRequest().authenticated())
-                .sessionManagement(s -> s
-                        .sessionCreationPolicy(SessionCreationPolicy.NEVER))
-                .addFilterBefore(authJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
-        ;
-        return http.build();
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // Using STATELESS for JWT
+                .oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(Customizer.withDefaults()))
+                .build();
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setExposedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
+    public RealmResource realmResource() {
+        return KeycloakBuilder.builder()
+                .serverUrl(keycloakUrl)
+                .realm("master")
+                .grantType(OAuth2Constants.PASSWORD)
+                .clientId("admin-cli")
+                .username("admin")
+                .password("admin")
+                .build()
+                .realm(realm);
+    }
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+    @Bean
+    public WebClient webClient() {
+        return WebClient.create(keycloakUrl);
     }
 }

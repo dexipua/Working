@@ -1,7 +1,8 @@
-package com.calendar.backend.auth.config;
+package com.calendar.backend.auth.utils;
 
 import jakarta.servlet.http.Cookie;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseCookie;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -22,5 +23,24 @@ public class CookieUtil {
             }
         }
         return null;
+    }
+
+    public static ResponseCookie deleteCookie(String name) {
+        return ResponseCookie.from(name, "")
+                .path("/")
+                .maxAge(0)
+                .build();
+    }
+
+    public static ResponseCookie createCookie(String name, String value, long maxAge, boolean httpOnly) {
+        ResponseCookie.ResponseCookieBuilder responseCookieBuilder = ResponseCookie.from(name, value)
+                .httpOnly(httpOnly)
+                .path("/");
+
+        if (maxAge != -1) {
+            responseCookieBuilder.maxAge(maxAge);
+        }
+
+        return responseCookieBuilder.build();
     }
 }

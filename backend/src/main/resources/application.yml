@@ -14,7 +14,7 @@ spring:
           issuer-uri: ${KEYCLOAK_URL}/realms/${REALM}
       client:
         registration:
-          ${CLIENT-ID}:
+          coffee-programmers-client:
             client-id: ${CLIENT_ID}
             client-secret: ${CLIENT_SECRET}
             scope: openid, profile, roles
@@ -75,9 +75,8 @@ supabase:
 server:
   port: ${PORT}
 
-SECRET: ${SECRET}
-JWT_TIME: ${JWT_TIME}
-RT_TIME: ${RT_TIME}
+jwt-time: ${JWT_TIME}
+rt-time: ${RT_TIME}
 
 # logging:
 #   level:

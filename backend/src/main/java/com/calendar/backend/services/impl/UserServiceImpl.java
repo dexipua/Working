@@ -1,5 +1,7 @@
 package com.calendar.backend.services.impl;
 
+import com.calendar.backend.dto.user.UserFullResponse;
+import com.calendar.backend.dto.user.UserUpdateRequest;
 import com.calendar.backend.dto.wrapper.PaginationListResponse;
 import com.calendar.backend.dto.wrapper.PasswordRequest;
 import com.calendar.backend.models.User;
@@ -11,6 +13,9 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -19,7 +24,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -29,8 +36,17 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final RealmResource realmResource;
+
+    private final WebClient webClient;
+
+    @Value("${realm}")
+    private String realm;
+    @Value("${client-id}")
+    private String clientId;
+    @Value("${client-secret}")
+    private String clientSecret;
 
     @Override
     public User create(User userCreateRequest) {
@@ -41,21 +57,52 @@ public class UserServiceImpl implements UserService {
                     userCreateRequest.getEmail() + " already exists");
         }
 
-        userCreateRequest.setPassword(passwordEncoder.encode(userCreateRequest.getPassword()));
         return userRepository.save(userCreateRequest);
     }
 
     @Override
-    public User update(User userUpdateData, long userId) {
+    public User updateUser(User newUser, long userId) {
         log.info("Service: Updating user with id {}", userId);
 
         User userToUpdate = findById(userId);
         checkForDeletedUser(userToUpdate);
 
-        userToUpdate.setFirstName(userUpdateData.getFirstName());
-        userToUpdate.setLastName(userUpdateData.getLastName());
-        userToUpdate.setDescription(userUpdateData.getDescription());
-        userToUpdate.setBirthday(userUpdateData.getBirthday());
+        String newFirstName = newUser.getFirstName();
+        String newLastName = newUser.getLastName();
+        LocalDate newBirthday = newUser.getBirthday();
+        String newDescription = newUser.getDescription();
+
+        String keycloakUserId = userToUpdate.getKeycloakUserId();
+
+        userToUpdate.setFirstName(newFirstName);
+        userToUpdate.setLastName(newLastName);
+        userToUpdate.setDescription(newDescription);
+        userToUpdate.setBirthday(newBirthday);
+
+        UserRepresentation userRepresentation = realmResource.users().get(keycloakUserId).toRepresentation();
+        userRepresentation.setFirstName(newFirstName);
+        userRepresentation.setLastName(newLastName);
+        userRepresentation.singleAttribute("description", newDescription);
+        userRepresentation.singleAttribute("birthday", String.valueOf(newBirthday));
+
+        realmResource.users().get(keycloakUserId).update(userRepresentation);
+
+        return userRepository.save(userToUpdate);
+    }
+
+    @Override
+    public User updateUserKeycloak(User newUser, long userId) {
+        log.info("Service: Updating user with id {}", userId);
+
+        User userToUpdate = findById(userId);
+        checkForDeletedUser(userToUpdate);
+
+        userToUpdate.setFirstName(newUser.getFirstName());
+        userToUpdate.setLastName(newUser.getLastName());
+        userToUpdate.setDescription(newUser.getDescription());
+        userToUpdate.setBirthday(newUser.getBirthday());
+        userToUpdate.setEmail(newUser.getEmail());
+        userToUpdate.setRole(newUser.getRole());
 
         return userRepository.save(userToUpdate);
     }
@@ -112,13 +159,6 @@ public class UserServiceImpl implements UserService {
         log.info("Service: Finding user by email {}", email);
         return userRepository.findByEmail(email).orElseThrow(
                 () -> new EntityNotFoundException("User not found with email " + email));
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        log.info("Service: Finding user details with email by loading {}", username);
-        return userRepository.findByEmail(username)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
     private Map<String, Object> createFilters(String email, String firstName, String lastName, String role) {

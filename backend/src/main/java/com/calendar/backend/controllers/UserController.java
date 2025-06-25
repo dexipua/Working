@@ -44,7 +44,7 @@ public class UserController {
             @Valid @RequestBody UserUpdateRequest request) {
         log.info("Controller: Update user with id: {} with body: {}", id, request);
         User user = userMapper.fromUserRequestToUser(request);
-        return userMapper.fromUserToUserResponse(userService.update(user, id));
+        return userMapper.fromUserToUserResponse(userService.updateUser(user, id));
     }
 
     @PutMapping("/update")
@@ -55,7 +55,7 @@ public class UserController {
         log.info("Controller: Update my user with body: {}", request);
         long userId = userService.findUserByAuth(auth).getId();
         User user = userMapper.fromUserRequestToUser(request);
-        return userMapper.fromUserToUserResponse(userService.update(user, userId));
+        return userMapper.fromUserToUserResponse(userService.updateUser(user, userId));
     }
 
     @PreAuthorize("hasRole('TEACHER')")
