@@ -19,7 +19,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.2.5
     container_name: keycloak
-    command: start-dev # --import-realm
+    command: start-dev --import-realm
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
