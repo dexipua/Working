@@ -72,6 +72,9 @@ supabase:
   key: ${CLOUD_KEY}
   bucket: small
 
+server:
+  port: ${PORT}
+
 SECRET: ${SECRET}
 JWT_TIME: ${JWT_TIME}
 RT_TIME: ${RT_TIME}

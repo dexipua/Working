@@ -29,8 +29,8 @@ services:
       KC_DB_PASSWORD: password
     depends_on:
       - postgres-keycloak
-#    volumes:
-#      - ./spring-boot-realm-realm.json:/opt/keycloak/data/import/spring-boot-realm-realm.json
+    volumes:
+      - ./coffee-programmers-realm.json:/opt/keycloak/data/import/coffee-programmers-realm.json
     network_mode: "service:localhost"
 
   postgres-backend:
@@ -62,9 +62,9 @@ services:
       - RT_TIME=259200000
       - KEYCLOAK_URL=http://localhost:8080
       - FRONTEND_URL=http://localhost:3000
-      - REALM=
-      - CLIENT_ID=
-      - CLIENT_SECRET=
+      - REALM=coffee-programmers
+      - CLIENT_ID=coffee-programmers-client
+      - CLIENT_SECRET=QRZGWTnEuxoXNo7eML4qXyZ3ru4xzrIY
     command: ["sh", "-c", "mvn clean package -DskipTests && java -jar target/*.jar"]
     network_mode: "service:localhost"
 
