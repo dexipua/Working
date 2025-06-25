@@ -41,7 +41,8 @@ public class FileServiceImpl implements FileService {
         String computedHash = sha256(bytes);
 
         if (!computedHash.equalsIgnoreCase(frontendHash)) {
-            throw new IllegalArgumentException("Hash mismatch – файл було пошкоджено або змінено");
+            log.error("Service: Hash of saved file is incorrect");
+            throw new IllegalArgumentException("Hash mismatch");
         }
 
         boolean exist = this.existsByFileHashAndUser_Id(computedHash, ownerId);
@@ -55,8 +56,10 @@ public class FileServiceImpl implements FileService {
 
         String publicUrl = "";
         if (!exist) {
+            log.info("Service: Saving file with name {}", file.getOriginalFilename());
             publicUrl = supabaseStorageService.uploadFile(realFileName, pre_UUID, bytes, file.getContentType());
         }else{
+            log.info("Service: Saving copy file with name {}", file.getOriginalFilename());
             publicUrl = fileRepository.findByFileHashAndUser_Id(computedHash, ownerId).get().getPath();
         }
 

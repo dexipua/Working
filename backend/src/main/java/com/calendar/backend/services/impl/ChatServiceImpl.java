@@ -27,7 +27,6 @@ public class ChatServiceImpl implements ChatService {
     private final ChatParticipantRepository participantRepository;
 
     public Chat createPrivateChat(Long userId1, Long userId2) {
-        log.info("Service: creating private chat");
         log.info("Service: checking for existence of chat");
         Optional<Chat> existing = chatRepository.findPrivateChatBetweenUsers(userId1, userId2);
         if (existing.isPresent()) return existing.get();
@@ -84,6 +83,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public List<Chat> getChatsByUserId(Long userId) {
+        log.info("Service: getting chats by user id {}", userId);
         return chatRepository.findAllByParticipantUserId(userId);
     }
 }
