@@ -102,6 +102,13 @@
         "clientRole" : true,
         "containerId" : "a32f5634-0d98-4c74-a651-7e494586b2dd",
         "attributes" : { }
+      }, {
+        "id" : "330838a0-c70a-4b76-a158-8be9f341464b",
+        "name" : "uma_protection",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "a32f5634-0d98-4c74-a651-7e494586b2dd",
+        "attributes" : { }
       } ],
       "realm-management" : [ {
         "id" : "2581df07-085b-428f-b6c9-9a2a88cc8664",
@@ -404,12 +411,12 @@
   "users" : [ {
     "id" : "95c06363-2168-4108-bf5b-d76bf8a8e31b",
     "username" : "bulakovskijvladislav@gmail.com",
-    "firstName" : "Bulakovskyi",
+    "firstName" : "Bulakovsky",
     "lastName" : "Vladyslav",
     "email" : "bulakovskijvladislav@gmail.com",
     "emailVerified" : false,
     "attributes" : {
-      "birthday" : [ "2010-02-03" ]
+      "birthday" : [ "2010-02-02" ]
     },
     "createdTimestamp" : 1750859126224,
     "enabled" : true,
@@ -417,9 +424,8 @@
     "credentials" : [ {
       "id" : "2ada4436-9746-4427-b2c9-b8e61686c385",
       "type" : "password",
-      "userLabel" : "My password",
-      "createdDate" : 1750859136069,
-      "secretData" : "{\"value\":\"OlsG5GnBs2kmcGoLeWMWiLzSdJS1YlPjPYEVnhcoQhc=\",\"salt\":\"W+IvVumBzumGCXmANNIWrw==\",\"additionalParameters\":{}}",
+      "createdDate" : 1750873693930,
+      "secretData" : "{\"value\":\"I4THe3L1DTb9ORl48VOycxCo+AQKZM/X/TTo+Plhgzg=\",\"salt\":\"nY3hKewTff/UB8KPU9YXAQ==\",\"additionalParameters\":{}}",
       "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
     } ],
     "disableableCredentialTypes" : [ ],
