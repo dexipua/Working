@@ -9,7 +9,6 @@ import Page from './components/layouts/Page';
 import Users from './components/pages/user/Users';
 import UserPage from './components/pages/user/UserPage';
 import ProfilePage from './components/pages/user/ProfilePage';
-import Login from "./security/login/Login";
 import {history} from "./utils/history";
 import {useEffect} from "react";
 
@@ -19,6 +18,10 @@ import {ErrorProvider} from "./contexts/ErrorContext";
 import FilePage from "./components/pages/file/FilePage";
 import ChatsPage from "./components/pages/chat/ChatPages";
 import Chat from "./components/pages/chat/Chat"
+import Callback from "./security/callback/Callback";
+import TeacherPanelPage from "./components/pages/teacher_panel/TeacherPanelPage";
+
+import Cookies from "js-cookie";
 
 const InitNavigation = ({children}) => {
     const navigate = useNavigate();
@@ -32,14 +35,17 @@ const InitNavigation = ({children}) => {
 
 function App() {
 
+    const role = Cookies.get('role');
+
     const routes = [
+        {path: "/callback", element: <Callback/>},
         {path: "/users", element: <Page><Users/></Page>},
         {path: "/profile", element: <ProfilePage/>},
         {path: "/users/:id", element: <Page><UserPage/></Page>},
         {path: "/files/:userId", element: <Page><FilePage/></Page>},
         {path: "/chats", element: <Page><ChatsPage/></Page> },
         {path: "/chat/:chatId", element: <Page><Chat/></Page> },
-
+        role === 'TEACHER' && {path: "/teacherPanel", element: <TeacherPanelPage/>},
         {
             path: "*", element:
                 <Page>
@@ -47,7 +53,7 @@ function App() {
                         404 Page not found
                     </Typography>
                 </Page>
-        },
+        }
 
     ];
 
@@ -58,7 +64,6 @@ function App() {
                     <ThemeProvider theme={theme}>
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <Routes>
-                                <Route path="/login" element={<Login/>}/>
                                 {routes.map((route, index) => (
                                     <Route element={<PrivateRoute/>} key={index}>
                                         <Route

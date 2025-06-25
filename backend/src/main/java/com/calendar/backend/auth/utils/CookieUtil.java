@@ -4,6 +4,7 @@ import jakarta.servlet.http.Cookie;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseCookie;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -38,7 +39,7 @@ public class CookieUtil {
                 .path("/");
 
         if (maxAge != -1) {
-            responseCookieBuilder.maxAge(maxAge);
+            responseCookieBuilder.maxAge(Duration.ofMillis(maxAge));
         }
 
         return responseCookieBuilder.build();

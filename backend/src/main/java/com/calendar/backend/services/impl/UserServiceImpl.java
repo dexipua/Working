@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -64,6 +65,7 @@ public class UserServiceImpl implements UserService {
         }
 
         UserRepresentation userRepresentation = new UserRepresentation();
+
         CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
         credentialRepresentation.setTemporary(false);
         credentialRepresentation.setType(CredentialRepresentation.PASSWORD);
@@ -76,7 +78,6 @@ public class UserServiceImpl implements UserService {
         userRepresentation.singleAttribute("birthday", String.valueOf(user.getBirthday()));
         userRepresentation.singleAttribute("description", user.getDescription());
         userRepresentation.setEnabled(true);
-
 
         Response response = realmResource.users().create(userRepresentation);
         if (response.getStatus() == 201) {
@@ -265,7 +266,7 @@ public class UserServiceImpl implements UserService {
             filters.put("lastName", lastName);
         }
         if (role != null && !role.isBlank() && !role.equals("null")) {
-            filters.put("role",role.toUpperCase());
+            filters.put("role", role.toUpperCase());
         }
 
         return filters;

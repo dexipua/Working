@@ -20,8 +20,12 @@ spring:
             scope: openid, profile, roles
             authorization-grant-type: authorization_code
             redirect-uri: ${FRONTEND_URL}/callback
+            provider: coffee-programmers-provider
         provider:
-          spring-boot-client:
+          coffee-programmers-provider:
+            authorization-uri: ${KEYCLOAK_URL}/realms/${REALM}/protocol/openid-connect/auth
+            token-uri: ${KEYCLOAK_URL}/realms/${REALM}/protocol/openid-connect/token
+            jwk-set-uri: ${KEYCLOAK_URL}/realms/${REALM}/protocol/openid-connect/certs
             issuer-uri: ${KEYCLOAK_URL}/realms/${REALM}
   datasource:
     url: ${DB_URL}
@@ -78,7 +82,7 @@ server:
 jwt-time: ${JWT_TIME}
 rt-time: ${RT_TIME}
 
-# logging:
-#   level:
-#     org.springframework.security: DEBUG
-#     org.springframework.security.oauth2: DEBUG
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG

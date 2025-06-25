@@ -12,10 +12,6 @@ const UserContainer = () => {
 
     const [user, setUser] = useState(null);
 
-    const [visitedEventsCount, setVisitedEventsCount] = useState(0);
-    const [completedTasksCount, setCompletedTasksCount] = useState({countCompleted:0, countAll: 0});
-    const [writtenCommentsCount, setWrittenCommentsCount] = useState(0);
-
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -56,9 +52,6 @@ const UserContainer = () => {
         <UserView
             handleUpdate={handleUpdate}
             user={user}
-            visitedEventsCount={visitedEventsCount}
-            completedTasksCount={completedTasksCount}
-            writtenCommentsCount={writtenCommentsCount}
         />
     );
 };

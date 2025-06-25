@@ -21,8 +21,7 @@ const UserListBox = ({user}) => {
                 {user.email}
             </Typography>
 
-            <Chip sx={{ml: -0.5}} label={TextUtils.formatEnumText(user.role)} size="small"/>
-
+            <Chip sx={{ml: -0.5}} label={user.role} size="small"/>
 
         </Box>
     );

@@ -57,10 +57,7 @@ const UserDataBox =
          user,
          handleUpdate,
          handleUpdatePassword,
-         isMyUser,
-         visitedEventsCount,
-         completedTasksCount,
-         writtenCommentsCount
+         isMyUser
      }) => {
         const isTeacher = Cookies.get("role") === "TEACHER";
 
@@ -78,7 +75,7 @@ const UserDataBox =
             {
                 icon: <PersonIcon color="primary"/>,
                 label: "Role:",
-                value: TextUtils.formatEnumText(user.role)
+                value: user.role
             },
         ]
 

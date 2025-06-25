@@ -39,12 +39,17 @@ const calendarTypographyStyles = {
 
 const AppBar = () => {
     const userId = Cookies.get("userId");
+    const role = Cookies.get("role");
 
     const buttons = [
         {text: "Users", link: "/users"},
         {text: "Files", link: "/files/" + userId },
         {text: "Chats", link: "/chats"}
     ]
+
+    if (role === "TEACHER") {
+        buttons.push({text: "Teacher panel", link: "/teacherPanel"})
+    }
 
     return (
         <MuiAppBar position="absolute" sx={appBarStyles}>

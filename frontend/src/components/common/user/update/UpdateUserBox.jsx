@@ -78,7 +78,7 @@ const UpdateUserBox = (
                                 label="Birthday"
                                 views={['year', 'month', 'day']}
                                 defaultValue={birthdayDate ? dayjs(birthdayDate) : null}
-                                onChange={(newValue) => setBirthdayDate(newValue ? newValue.format('YYYY-MM-DDTHH:mm:ss') : null)}
+                                onChange={(newValue) => setBirthdayDate(newValue ? newValue.format('YYYY-MM-DD') : null)}
                                 slotProps={{
                                     textField: {
                                         sx: {

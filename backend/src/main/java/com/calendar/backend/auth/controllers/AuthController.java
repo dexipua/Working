@@ -17,11 +17,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.util.*;
 
 import static com.calendar.backend.auth.utils.CookieUtil.createCookie;
 import static com.calendar.backend.auth.utils.CookieUtil.deleteCookie;
-import static com.calendar.backend.auth.utils.SecurityUtil.getRole;
+import static com.calendar.backend.auth.utils.SecurityUtil.extractRole;
 import static org.springframework.http.CacheControl.maxAge;
 
 @Slf4j
@@ -47,6 +48,7 @@ public class AuthController {
 
     @PostMapping("/callback")
     public Mono<ResponseEntity<Void>> exchangeCode(@RequestParam String code) {
+        log.info(code);
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "authorization_code");
         formData.add("code", code);
@@ -75,10 +77,10 @@ public class AuthController {
                     Jwt accessToken = jwtDecoder.decode(accessTokenString);
 
                     String email = idToken.getClaim("email");
-                    String role = getRole(accessToken);
+                    String role = extractRole(clientId, accessToken);
                     User user = new User();
                     user.setEmail(email);
-                    user.setBirthday(idToken.getClaim("birthday"));
+                    user.setBirthday(LocalDate.parse(idToken.getClaim("birthday")));
                     user.setFirstName(idToken.getClaim("given_name"));
                     user.setLastName(idToken.getClaim("family_name"));
                     user.setDescription(idToken.getClaim("description"));
@@ -87,7 +89,7 @@ public class AuthController {
                     if (userService.isNotExistByEmail(email)) {
                         user.setId(userService.createUserKeycloak(user).getId());
                     } else {
-                        userService.updateUserKeycloak(user, userService.findUserByEmail(email).getId());
+                        user.setId(userService.updateUserKeycloak(user, userService.findUserByEmail(email).getId()).getId());
                     }
 
                     ResponseCookie cookie = createCookie("accessToken", accessTokenString, jwtTime, false);

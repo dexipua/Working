@@ -136,7 +136,7 @@ const CreateUserDialog = ({handleCreate}) => {
                                     label="Birthday"
                                     views={['year', 'month', 'day']}
                                     defaultValue={birthday ? dayjs(birthday) : null}
-                                    onChange={(newValue) => setBirthday(newValue ? newValue.format('YYYY-MM-DDTHH:mm:ss') : null)}
+                                    onChange={(newValue) => setBirthday(newValue ? newValue.format('YYYY-MM-DD') : null)}
                                     slotProps={{
                                         textField: {
                                             sx: {
