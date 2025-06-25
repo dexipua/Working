@@ -11,4 +11,6 @@ import java.util.Optional;
 public interface FileRepository extends JpaRepository<File,Long> {
     Page<File> findByUser_IdAndFileTypeEnumEquals(long userId, FileType fileTypeEnum, Pageable pageable);
     Optional<File> findByFileHashAndUser_Id(String fileHash, Long userId);
+    Optional<File> findByUser_IdAndFileTypeEnumEquals(long userId, FileType fileTypeEnum);
+    boolean existsByUser_IdAndFileTypeEnumEquals(long userId, FileType fileTypeEnum);
 }

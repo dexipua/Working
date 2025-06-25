@@ -32,10 +32,10 @@ public class FileServiceImpl implements FileService {
     private final FileRepository fileRepository;
     private final UserService userService;
     private final SupabaseStorageService supabaseStorageService;
-    private final FileMapper fileMapper;
+
 
     @Override
-    public String save(MultipartFile file, long ownerId, String frontendHash) throws IOException, NoSuchAlgorithmException {
+    public String save(MultipartFile file, long ownerId, String frontendHash, FileType fileType) throws IOException, NoSuchAlgorithmException {
         String computedHash = chackHash(file, ownerId, frontendHash);
 
         boolean exist = this.existsByFileHashAndUser_Id(computedHash, ownerId);
@@ -43,6 +43,11 @@ public class FileServiceImpl implements FileService {
         String realFileName = createName(file.getOriginalFilename());
 
         String publicUrl = "";
+
+        if (FileType.AVATAR.equals(fileType) && exist) {
+            delete(fileRepository.findByFileHashAndUser_Id(computedHash, ownerId).get().getId());
+        }
+
         if (!exist) {
             log.info("Service: Saving file with name {}", file.getOriginalFilename());
             publicUrl = supabaseStorageService.uploadFile(realFileName, file.getBytes(), file.getContentType());
@@ -52,37 +57,7 @@ public class FileServiceImpl implements FileService {
         }
 
         File entity = new File();
-        entity.setFileTypeEnum(FileType.OTHER);
-        entity.setFileName(realFileName);
-        entity.setFileRealName(file.getOriginalFilename());
-        entity.setFileHash(computedHash);
-        entity.setUser(userService.findById(ownerId));
-        entity.setFileType(file.getContentType());
-        entity.setFileSize(String.valueOf(file.getSize()));
-        entity.setPath(publicUrl);
-
-        return fileRepository.save(entity).getPath();
-    }
-
-    @Override
-    public String saveAvatar(MultipartFile file, long ownerId, String frontendHash) throws IOException, NoSuchAlgorithmException {
-        String computedHash = chackHash(file, ownerId, frontendHash);
-
-        boolean exist = this.existsByFileHashAndUser_Id(computedHash, ownerId);
-
-        String realFileName = createName(file.getOriginalFilename());
-
-        String publicUrl = "";
-        if (!exist) {
-            log.info("Service: Saving file with name {}", file.getOriginalFilename());
-            publicUrl = supabaseStorageService.uploadFile(realFileName, file.getBytes(), file.getContentType());
-        }else{
-            log.info("Service: Saving copy file with name {}", file.getOriginalFilename());
-            fileRepository.deleteById(fileRepository.findByFileHashAndUser_Id(computedHash, ownerId).get().getId());
-        }
-
-        File entity = new File();
-        entity.setFileTypeEnum(FileType.AVATAR);
+        entity.setFileTypeEnum(fileType);
         entity.setFileName(realFileName);
         entity.setFileRealName(file.getOriginalFilename());
         entity.setFileHash(computedHash);
@@ -119,13 +94,13 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public PaginationListResponse<FileSimpleResponse> findByUserId(Long userId, int page, int size) {
+    public PaginationListResponse<File> findByUserId(Long userId, int page, int size) {
         log.info("Service: Find files by user id {}", userId);
-        PaginationListResponse<FileSimpleResponse> response = new PaginationListResponse<>();
+        PaginationListResponse<File> response = new PaginationListResponse<>();
         Page<File> byUserId = fileRepository.findByUser_IdAndFileTypeEnumEquals(
                 userId, FileType.OTHER, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "uploadDate")));
         response.setTotalPages(byUserId.getTotalPages());
-        response.setContent(byUserId.stream().map(fileMapper::toSimpleResponse).collect(Collectors.toList()));
+        response.setContent(byUserId.getContent());
         return response;
     }
 
@@ -146,6 +121,16 @@ public class FileServiceImpl implements FileService {
         return fileRepository.findByFileHashAndUser_Id(fileHash, userId).isPresent();
     }
 
+    @Override
+    public boolean haveAvatar(long userId) {
+        return fileRepository.existsByUser_IdAndFileTypeEnumEquals(userId, FileType.AVATAR);
+    }
+
+    @Override
+    public File getAvatar(long userId) {
+        return fileRepository.findByUser_IdAndFileTypeEnumEquals(userId, FileType.AVATAR).get();
+    }
+
     private String sha256(byte[] bytes) throws NoSuchAlgorithmException {
         log.info("Service: Sha256 hash <UNK> <UNK> <UNK> <UNK> <UNK>");
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -154,4 +139,6 @@ public class FileServiceImpl implements FileService {
         for (byte b : hashBytes) sb.append(String.format("%02x", b));
         return sb.toString();
     }
+
+
 }

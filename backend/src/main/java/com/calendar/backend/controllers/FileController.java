@@ -2,6 +2,7 @@ package com.calendar.backend.controllers;
 
 import com.calendar.backend.dto.file.FileSimpleResponse;
 import com.calendar.backend.dto.wrapper.PaginationListResponse;
+import com.calendar.backend.mappers.FileMapper;
 import com.calendar.backend.models.File;
 import com.calendar.backend.models.enums.FileType;
 import com.calendar.backend.services.inter.FileService;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -25,6 +27,7 @@ import java.util.Map;
 public class FileController {
 
     private final FileService fileService;
+    private final FileMapper fileMapper;
 
     @PostMapping("/upload")
     @ResponseStatus(HttpStatus.CREATED)
@@ -33,8 +36,35 @@ public class FileController {
             @RequestParam long ownerId,
             @RequestParam String frontendHash) throws IOException, NoSuchAlgorithmException {
         log.info("Controller: upload file");
-        String url = fileService.save(file, ownerId, frontendHash);
+        String url = fileService.save(file, ownerId, frontendHash, FileType.OTHER);
         return ResponseEntity.ok(url);
+    }
+
+    @PostMapping("/upload/avatar")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<String> uploadAvatar(
+            @RequestParam MultipartFile file,
+            @RequestParam long ownerId,
+            @RequestParam String frontendHash) throws IOException, NoSuchAlgorithmException {
+        log.info("Controller: upload avatar file");
+        String url = fileService.save(file, ownerId, frontendHash, FileType.AVATAR);
+        return ResponseEntity.ok(url);
+    }
+
+    @GetMapping("/check/avatar")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Boolean> checkAvatar(
+            @RequestParam Long userId){
+        log.info("Controller: check avatar file");
+        return ResponseEntity.ok(fileService.haveAvatar(userId));
+    }
+
+    @GetMapping("/avatar")
+    @ResponseStatus(HttpStatus.OK)
+    public FileSimpleResponse getAvatar(
+            @RequestParam Long userId){
+        log.info("Controller: get avatar");
+        return fileMapper.toSimpleResponse(fileService.getAvatar(userId));
     }
 
     @GetMapping
@@ -44,7 +74,11 @@ public class FileController {
             @RequestParam int page,
             @RequestParam int size) {
         log.info("Controller: get files with userId: {}", userId);
-        return fileService.findByUserId(userId, page, size);
+        PaginationListResponse<File>  list = fileService.findByUserId(userId, page, size);
+        PaginationListResponse<FileSimpleResponse> response = new PaginationListResponse<>();
+        response.setTotalPages(list.getTotalPages());
+        response.setContent(list.getContent().stream().map(fileMapper::toSimpleResponse).collect(Collectors.toList()));
+        return response;
     }
 
     @DeleteMapping("/{id}")
