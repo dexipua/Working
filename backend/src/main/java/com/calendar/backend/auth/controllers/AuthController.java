@@ -85,7 +85,7 @@ public class AuthController {
                     user.setKeycloakUserId(idToken.getClaim("sub"));
                     user.setRole(role);
                     if (userService.isNotExistByEmail(email)) {
-                        user.setId(userService.create(user).getId());
+                        user.setId(userService.createUserKeycloak(user).getId());
                     } else {
                         userService.updateUserKeycloak(user, userService.findUserByEmail(email).getId());
                     }

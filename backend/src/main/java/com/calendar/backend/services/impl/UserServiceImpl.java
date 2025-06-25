@@ -1,35 +1,36 @@
 package com.calendar.backend.services.impl;
 
-import com.calendar.backend.dto.user.UserFullResponse;
-import com.calendar.backend.dto.user.UserUpdateRequest;
 import com.calendar.backend.dto.wrapper.PaginationListResponse;
 import com.calendar.backend.dto.wrapper.PasswordRequest;
 import com.calendar.backend.models.User;
-import com.calendar.backend.models.enums.Role;
 import com.calendar.backend.repositories.UserRepository;
 import com.calendar.backend.repositories.specification.UserSpecification;
 import com.calendar.backend.services.inter.UserService;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -49,15 +50,47 @@ public class UserServiceImpl implements UserService {
     private String clientSecret;
 
     @Override
-    public User create(User userCreateRequest) {
-        log.info("Service: Saving new user {}", userCreateRequest);
+    public User createUserKeycloak(User user) {
+        log.info("Service: Saving new user {}", user.getEmail());
+        return userRepository.save(user);
+    }
 
-        if (userRepository.findByEmail(userCreateRequest.getEmail()).isPresent()) {
-            throw new EntityExistsException("User with email " +
-                    userCreateRequest.getEmail() + " already exists");
+    @Override
+    public User createUser(User user, String password) {
+        log.info("Service: Saving new user {}", user.getEmail());
+        String email = user.getEmail();
+        if (userRepository.existsByEmail(email)) {
+            throw new EntityExistsException("User with email " + email + " already exists");
         }
 
-        return userRepository.save(userCreateRequest);
+        UserRepresentation userRepresentation = new UserRepresentation();
+        CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
+        credentialRepresentation.setTemporary(false);
+        credentialRepresentation.setType(CredentialRepresentation.PASSWORD);
+        credentialRepresentation.setValue(password);
+
+        userRepresentation.setCredentials(List.of(credentialRepresentation));
+        userRepresentation.setFirstName(user.getFirstName());
+        userRepresentation.setLastName(user.getLastName());
+        userRepresentation.setEmail(user.getEmail());
+        userRepresentation.singleAttribute("birthday", String.valueOf(user.getBirthday()));
+        userRepresentation.singleAttribute("description", user.getDescription());
+        userRepresentation.setEnabled(true);
+
+
+        Response response = realmResource.users().create(userRepresentation);
+        if (response.getStatus() == 201) {
+            URI location = response.getLocation();
+            String path = location.getPath();
+            String userId = path.substring(path.lastIndexOf('/') + 1);
+            user.setKeycloakUserId(userId);
+        } else {
+            System.out.println("Service: Failed to create user. Status: " + response.getStatus());
+            String error = response.readEntity(String.class);
+            System.out.println("Service: Error response: " + error);
+        }
+        response.close();
+        return createUserKeycloak(user);
     }
 
     @Override
@@ -107,10 +140,59 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(userToUpdate);
     }
 
+    private boolean verifyOldPassword(String username, String password) {
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("grant_type", "password");
+        formData.add("client_id", clientId);
+        formData.add("client_secret", clientSecret);
+        formData.add("username", username);
+        formData.add("password", password);
+        try {
+            webClient.post()
+                    .uri("/realms/" + realm + "/protocol/openid-connect/token")
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .bodyValue(formData)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            return true;
+        } catch (WebClientResponseException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean updatePassword(PasswordRequest passwordRequest, Authentication authentication) {
+        String keycloakUserId = authentication.getName();
+        String email = findUserByKeycloakUserId(keycloakUserId).getEmail();
+
+        log.info("Service: Updating password for user with email {}", email);
+
+        boolean isOldPasswordValid = verifyOldPassword(email, passwordRequest.getOldPassword());
+        if (!isOldPasswordValid) {
+            log.warn("Service: Old password is incorrect for user {}", email);
+            throw new IllegalArgumentException("Old password is incorrect");
+        }
+
+        CredentialRepresentation credential = new CredentialRepresentation();
+        credential.setType(CredentialRepresentation.PASSWORD);
+        credential.setValue(passwordRequest.getNewPassword());
+        credential.setTemporary(false);
+
+        realmResource.users().get(keycloakUserId).resetPassword(credential);
+
+        log.info("Password successfully updated for user {}", email);
+        return true;
+    }
+
     @Override
     public void delete(long id) {
         log.info("Service: Deleting user with id {}", id);
-        checkForDeletedUser(findById(id));
+        User user = findById(id);
+        checkForDeletedUser(user);
+
+        realmResource.users().delete(user.getKeycloakUserId());
         userRepository.deleteById(id);
     }
 
@@ -144,10 +226,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findUserByAuth(Authentication authentication) {
         log.info("Service: Finding user by authentication {}", authentication);
-        return userRepository.findByEmail(authentication.getName()).orElseThrow(
+        return findUserByKeycloakUserId(authentication.getName());
+    }
+
+    @Override
+    public User findUserByKeycloakUserId(String keycloakUserId) {
+        log.info("Service: Finding user by keycloakUserId {}", keycloakUserId);
+        return userRepository.findByKeycloakUserId(keycloakUserId).orElseThrow(
                 () -> new EntityNotFoundException("User not found")
         );
     }
+
 
     @Override
     public boolean isNotExistByEmail(String email) {
@@ -176,7 +265,7 @@ public class UserServiceImpl implements UserService {
             filters.put("lastName", lastName);
         }
         if (role != null && !role.isBlank() && !role.equals("null")) {
-            filters.put("role", Role.valueOf(role.toUpperCase()).getLevel());
+            filters.put("role",role.toUpperCase());
         }
 
         return filters;
