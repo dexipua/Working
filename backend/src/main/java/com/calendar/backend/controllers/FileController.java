@@ -25,16 +25,6 @@ public class FileController {
 
     private final FileService fileService;
 
-    @GetMapping("/check")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Map<String, Boolean>> checkFile(
-            @RequestParam String hash,
-            @RequestParam Long userId) {
-        log.info("Controller: check file with hash: {}", hash);
-        boolean exists = fileService.existsByFileHashAndUser_Id(hash, userId);
-        return ResponseEntity.ok().body(Map.of("exists", exists));
-    }
-
     @PostMapping("/upload")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<String> upload(

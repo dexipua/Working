@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.Normalizer;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -36,9 +37,6 @@ public class FileServiceImpl implements FileService {
     @Override
     public String save(MultipartFile file, long ownerId, String frontendHash) throws IOException, NoSuchAlgorithmException {
         log.info("Service: Save file with id {}", file.getOriginalFilename());
-        String realFileName = file.getOriginalFilename();
-        String pre_UUID = String.valueOf(UUID.randomUUID());
-
         byte[] bytes = file.getBytes();
         String computedHash = sha256(bytes);
 
@@ -46,11 +44,21 @@ public class FileServiceImpl implements FileService {
             throw new IllegalArgumentException("Hash mismatch – файл було пошкоджено або змінено");
         }
 
-        realFileName = Normalizer.normalize(realFileName, Normalizer.Form.NFD)
+        boolean exist = this.existsByFileHashAndUser_Id(computedHash, ownerId);
+
+        String realFileName = file.getOriginalFilename();
+        String pre_UUID = String.valueOf(UUID.randomUUID());
+
+        realFileName = Normalizer.normalize(Objects.requireNonNull(realFileName), Normalizer.Form.NFD)
                 .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
         realFileName = realFileName.replaceAll("[^a-zA-Z0-9._-]", "_");
 
-        String publicUrl = supabaseStorageService.uploadFile(realFileName, pre_UUID, bytes, file.getContentType());
+        String publicUrl = "";
+        if (!exist) {
+            publicUrl = supabaseStorageService.uploadFile(realFileName, pre_UUID, bytes, file.getContentType());
+        }else{
+            publicUrl = fileRepository.findByFileHashAndUser_Id(computedHash, ownerId).get().getPath();
+        }
 
         File entity = new File();
         entity.setFileName(pre_UUID + realFileName);
@@ -63,6 +71,7 @@ public class FileServiceImpl implements FileService {
 
         return fileRepository.save(entity).getPath();
     }
+
 
     @Override
     public PaginationListResponse<FileSimpleResponse> findByUserId(Long userId, int page, int size) {
