@@ -4,6 +4,7 @@ import com.calendar.backend.dto.file.FileSimpleResponse;
 import com.calendar.backend.dto.wrapper.PaginationListResponse;
 import com.calendar.backend.mappers.FileMapper;
 import com.calendar.backend.models.File;
+import com.calendar.backend.models.enums.FileType;
 import com.calendar.backend.repositories.FileRepository;
 import com.calendar.backend.services.inter.FileService;
 import com.calendar.backend.services.inter.UserService;
@@ -11,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,35 +36,24 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public String save(MultipartFile file, long ownerId, String frontendHash) throws IOException, NoSuchAlgorithmException {
-        log.info("Service: Save file with id {}", file.getOriginalFilename());
-        byte[] bytes = file.getBytes();
-        String computedHash = sha256(bytes);
-
-        if (!computedHash.equalsIgnoreCase(frontendHash)) {
-            log.error("Service: Hash of saved file is incorrect");
-            throw new IllegalArgumentException("Hash mismatch");
-        }
+        String computedHash = chackHash(file, ownerId, frontendHash);
 
         boolean exist = this.existsByFileHashAndUser_Id(computedHash, ownerId);
 
-        String realFileName = file.getOriginalFilename();
-        String pre_UUID = String.valueOf(UUID.randomUUID());
-
-        realFileName = Normalizer.normalize(Objects.requireNonNull(realFileName), Normalizer.Form.NFD)
-                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
-        realFileName = realFileName.replaceAll("[^a-zA-Z0-9._-]", "_");
+        String realFileName = createName(file.getOriginalFilename());
 
         String publicUrl = "";
         if (!exist) {
             log.info("Service: Saving file with name {}", file.getOriginalFilename());
-            publicUrl = supabaseStorageService.uploadFile(realFileName, pre_UUID, bytes, file.getContentType());
+            publicUrl = supabaseStorageService.uploadFile(realFileName, file.getBytes(), file.getContentType());
         }else{
             log.info("Service: Saving copy file with name {}", file.getOriginalFilename());
             publicUrl = fileRepository.findByFileHashAndUser_Id(computedHash, ownerId).get().getPath();
         }
 
         File entity = new File();
-        entity.setFileName(pre_UUID + realFileName);
+        entity.setFileTypeEnum(FileType.OTHER);
+        entity.setFileName(realFileName);
         entity.setFileRealName(file.getOriginalFilename());
         entity.setFileHash(computedHash);
         entity.setUser(userService.findById(ownerId));
@@ -75,12 +64,66 @@ public class FileServiceImpl implements FileService {
         return fileRepository.save(entity).getPath();
     }
 
+    @Override
+    public String saveAvatar(MultipartFile file, long ownerId, String frontendHash) throws IOException, NoSuchAlgorithmException {
+        String computedHash = chackHash(file, ownerId, frontendHash);
+
+        boolean exist = this.existsByFileHashAndUser_Id(computedHash, ownerId);
+
+        String realFileName = createName(file.getOriginalFilename());
+
+        String publicUrl = "";
+        if (!exist) {
+            log.info("Service: Saving file with name {}", file.getOriginalFilename());
+            publicUrl = supabaseStorageService.uploadFile(realFileName, file.getBytes(), file.getContentType());
+        }else{
+            log.info("Service: Saving copy file with name {}", file.getOriginalFilename());
+            fileRepository.deleteById(fileRepository.findByFileHashAndUser_Id(computedHash, ownerId).get().getId());
+        }
+
+        File entity = new File();
+        entity.setFileTypeEnum(FileType.AVATAR);
+        entity.setFileName(realFileName);
+        entity.setFileRealName(file.getOriginalFilename());
+        entity.setFileHash(computedHash);
+        entity.setUser(userService.findById(ownerId));
+        entity.setFileType(file.getContentType());
+        entity.setFileSize(String.valueOf(file.getSize()));
+        entity.setPath(publicUrl);
+
+        return fileRepository.save(entity).getPath();
+    }
+
+    private String chackHash(MultipartFile file, long ownerId, String frontendHash) throws IOException, NoSuchAlgorithmException {
+        log.info("Service: Save file with id {}", file.getOriginalFilename());
+        byte[] bytes = file.getBytes();
+        String computedHash = sha256(bytes);
+
+        if (!computedHash.equalsIgnoreCase(frontendHash)) {
+            log.error("Service: Hash of saved file is incorrect");
+            throw new IllegalArgumentException("Hash mismatch");
+        }
+
+        return computedHash;
+    }
+
+    private String createName(String originalName){
+        String realFileName = originalName;
+        String pre_UUID = String.valueOf(UUID.randomUUID());
+
+        realFileName = Normalizer.normalize(Objects.requireNonNull(realFileName), Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        realFileName = realFileName.replaceAll("[^a-zA-Z0-9._-]", "_");
+
+        return  pre_UUID + realFileName;
+    }
 
     @Override
     public PaginationListResponse<FileSimpleResponse> findByUserId(Long userId, int page, int size) {
         log.info("Service: Find files by user id {}", userId);
         PaginationListResponse<FileSimpleResponse> response = new PaginationListResponse<>();
-        Page<File> byUserId = fileRepository.findByUser_Id(userId, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "uploadDate")));
+        Page<File> byUserId = fileRepository.findByUser_IdAndFileTypeEnumEquals(
+                userId, FileType.OTHER, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "uploadDate")));
         response.setTotalPages(byUserId.getTotalPages());
         response.setContent(byUserId.stream().map(fileMapper::toSimpleResponse).collect(Collectors.toList()));
         return response;

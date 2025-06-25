@@ -3,6 +3,7 @@ package com.calendar.backend.services.inter;
 import com.calendar.backend.dto.file.FileSimpleResponse;
 import com.calendar.backend.dto.wrapper.PaginationListResponse;
 import com.calendar.backend.models.File;
+import com.calendar.backend.models.enums.FileType;
 import kong.unirest.FileResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

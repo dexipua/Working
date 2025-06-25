@@ -21,10 +21,9 @@ public class SupabaseStorageService {
     @Value("${supabase.bucket}")
     private String bucket;
 
-    public String uploadFile(String fileName, String pre_UUID, byte[] fileBytes, String contentType) {
+    public String uploadFile(String fileName, byte[] fileBytes, String contentType) {
         log.info("Service: Upload to cloud file with name {}", fileName);
 
-        fileName = pre_UUID + fileName;
         HttpResponse<String> response = Unirest.put(supabaseUrl + "/storage/v1/object/" + bucket + "/" + fileName)
                 .header("apikey", supabaseKey)
                 .header("Authorization", "Bearer " + supabaseKey)

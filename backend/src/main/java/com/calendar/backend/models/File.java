@@ -1,5 +1,6 @@
 package com.calendar.backend.models;
 
+import com.calendar.backend.models.enums.FileType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,4 +27,5 @@ public class File {
     private String fileHash;
     private LocalDateTime uploadDate;
     private String fileRealName;
+    private FileType fileTypeEnum;
 }

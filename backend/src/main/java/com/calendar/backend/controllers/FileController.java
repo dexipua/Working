@@ -3,6 +3,7 @@ package com.calendar.backend.controllers;
 import com.calendar.backend.dto.file.FileSimpleResponse;
 import com.calendar.backend.dto.wrapper.PaginationListResponse;
 import com.calendar.backend.models.File;
+import com.calendar.backend.models.enums.FileType;
 import com.calendar.backend.services.inter.FileService;
 import com.calendar.backend.services.inter.UserService;
 import lombok.RequiredArgsConstructor;
