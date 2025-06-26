@@ -3,12 +3,14 @@ import EmailIcon from "@mui/icons-material/Email";
 import PersonIcon from "@mui/icons-material/Person";
 import {Box} from "@mui/material";
 import Typography from "@mui/material/Typography";
-import React from "react";
+import React, {useState} from "react";
 import InfoList from "../../../layouts/InfoList";
 import TextUtils from "../../../../utils/TextUtils";
 import DateUtils from "../../../../utils/DateUtils";
+import FileUploader from "../../file/FileUploader";
 
 const UserDataBox = ({user}) => {
+    const [profileIcon, setProfileIcon] = useState(null)
     const optionList = [
         {
             icon: <CalendarMonthIcon/>,
@@ -26,6 +28,10 @@ const UserDataBox = ({user}) => {
             value: TextUtils.formatEnumText(user.role)
         },
     ]
+
+    const onUploadProfileIcon = (file) => {
+      setProfileIcon(file)
+    }
 
     return (
         <Box sx={{
@@ -49,8 +55,27 @@ const UserDataBox = ({user}) => {
                     border: 3,
                     borderColor: 'primary.dark'
                 }}>
-                    <PersonIcon color="primary" sx={{fontSize: 250, padding: 0, margin: 0}}/>
+                    {profileIcon === null ? (
+                        <PersonIcon color="primary" sx={{fontSize: 250, padding: 0, margin: 0}}/>
+                    ) : (
+                        profileIcon.fileType.startsWith("image/") && (
+                                <Box
+                                    component="img"
+                                    src={profileIcon.path}
+                                    alt={profileIcon.fileRealName}
+                                    sx={{
+                                        width: "101%",
+                                        height: "101%",
+                                        borderRadius: "50%",
+                                        objectFit: "cover"
+                                    }}
+                                    // sx={{width: "100%", height: 160, , borderRadius: 2, mb: 1}}
+                                />
+                            )
+                    )}
+
                 </Box>
+                <FileUploader onUploadFile={onUploadProfileIcon}/>
 
                 <Box mb={2} sx={{display: 'flex', alignItems: 'center',}}>
                     <Typography fontWeight={'bold'} variant="h4">{TextUtils.getUserFullName(user)}</Typography>
