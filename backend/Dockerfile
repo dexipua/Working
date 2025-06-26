@@ -18,4 +18,4 @@ COPY --from=build /target/backend-0.0.1-SNAPSHOT.jar /app/backend.jar
 COPY wait-for-keycloak.sh /app/wait-for-keycloak.sh
 RUN chmod +x /app/wait-for-keycloak.sh
 
-ENTRYPOINT ["/app/wait-for-keycloak.sh", "java", "-jar", "/app/backend.jar"]
+ENTRYPOINT ["bash", "/app/wait-for-keycloak.sh", "java", "-jar", "/app/backend.jar"]
