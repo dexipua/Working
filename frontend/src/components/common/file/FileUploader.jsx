@@ -8,6 +8,7 @@ const FileUploader = ({onUploadFile}) => {
     const handleFileChange = async (e) => {
         console.log('handleFileChange')
         await uploadFile(e.target.files[0])
+        e.target.value = null;
     };
 
     const computeHash = async (file) => {
