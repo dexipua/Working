@@ -57,12 +57,8 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Value("${realm}")
-    private String realm;
     @Value("${client-id}")
     private String clientId;
-    @Value("${keycloak-url}")
-    private String keycloakUrl;
     @Value("${frontend-url}")
     private String frontendUrl;
 
@@ -81,40 +77,6 @@ public class SecurityConfig {
                 .build();
     }
 
-
-    @Bean
-    public RealmResource realmResource() {
-        return KeycloakBuilder.builder()
-                .serverUrl(keycloakUrl)
-                .realm("master")
-                .grantType(OAuth2Constants.PASSWORD)
-                .clientId("admin-cli")
-                .username("admin")
-                .password("admin")
-                .build()
-                .realm(realm);
-    }
-
-    @Bean
-    public ClientResource clientResource(RealmResource realmResource, String clientUUID) {
-        return realmResource.clients().get(clientUUID);
-    }
-
-    @Bean
-    public String clientUUID() {
-        return realmResource().clients().findByClientId(clientId).get(0).getId();
-    }
-
-    @Bean
-    public Map<String, RoleRepresentation> clientRoles(ClientResource clientResource) {
-        return clientResource.roles().list().stream().collect(Collectors.toMap(RoleRepresentation::getName, Function.identity()));
-    }
-
-    @Bean
-    public WebClient webClient() {
-        return WebClient.create(keycloakUrl);
-    }
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -128,6 +90,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
-
 }
