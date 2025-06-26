@@ -14,7 +14,7 @@ const Callback = () => {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
                 body: new URLSearchParams({ code }),
-                credentials: 'include' // щоб кука з токеном зберіглась
+                credentials: 'include'
             }).then(res => {
                 if (res.ok) {
                     navigate('/');

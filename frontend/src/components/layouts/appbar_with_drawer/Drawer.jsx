@@ -85,6 +85,7 @@ const Drawer = ({open, handleDrawerClose}) => {
         {type: "navigation", icon: <AccountCircleIcon/>, title: "Profile", path: "/profile"},
         {type: "divider"},
         {type: "navigation", icon: <ChevronRightIcon/>, title: "AppBar", path: "/first"},
+        {type: "navigation", icon: <ChevronRightIcon/>, title: "TeacherPanel", path: "/teacher-panel"},
     ]
 
     return (

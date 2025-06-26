@@ -1,7 +1,10 @@
 package com.calendar.backend.repositories.specification;
 
 import com.calendar.backend.models.User;
-import jakarta.persistence.criteria.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
@@ -32,8 +35,8 @@ public class UserSpecification {
             }
 
             if (filters.containsKey("role")) {
-                Long roleId = Long.valueOf(filters.get("role").toString());
-                predicates.add(criteriaBuilder.equal(root.get("role"), roleId));
+                String role = filters.get("role").toString();
+                predicates.add(criteriaBuilder.equal(root.get("role"), role));
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));

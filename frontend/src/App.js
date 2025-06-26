@@ -3,10 +3,10 @@ import {ThemeProvider} from '@mui/material';
 import {LocalizationProvider} from '@mui/x-date-pickers';
 import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs';
 import theme from './assets/theme';
+import Callback from './security/callback/Callback';
 import Users from './components/pages/user/Users';
 import UserPage from './components/pages/user/UserPage';
 import Profile from './components/pages/user/Profile';
-import Login from "./security/login/Login";
 import {history} from "./utils/history";
 import {useEffect} from "react";
 import PrivateRoute from "./security/PrivateRoute";
@@ -14,6 +14,7 @@ import {ErrorProvider} from "./contexts/ErrorContext";
 import FilePage from "./components/pages/file/FilePage";
 import ChatsPage from "./components/pages/chat/ChatPages";
 import Chat from "./components/pages/chat/Chat"
+import TeacherPanelPage from "./components/pages/teacher_panel/TeacherPanelPage"
 import PageContainer from "./components/layouts/appbar_with_drawer/PageContainer";
 import First from "./components/pages/template/First";
 import Second from "./components/pages/template/Second";
@@ -37,6 +38,8 @@ function App() {
         {path: "/second", element: <Second/>},
         {path: "/third", element: <Third/>},
 
+        {path: "/teacher-panel", element: <TeacherPanelPage/>},
+        {path: "/callback", element: <Callback/>},
         {path: "/users", element: <Users/>},
         {path: "/profile", element: <Profile/>},
         {path: "/users/:id", element: <UserPage/>},
@@ -55,7 +58,6 @@ function App() {
                     <ThemeProvider theme={theme}>
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <Routes>
-                                <Route path="/login" element={<Login/>}/>
                                 {routes.map((route, index) => (
                                     <Route element={<PrivateRoute/>} key={index}>
                                         <Route
