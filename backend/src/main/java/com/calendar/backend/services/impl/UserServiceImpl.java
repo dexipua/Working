@@ -11,6 +11,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.keycloak.admin.client.resource.ClientResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -32,6 +33,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -40,6 +42,8 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RealmResource realmResource;
+    private final ClientResource clientResource;
+    private final String clientUUID;
 
     private final WebClient webClient;
 
@@ -86,11 +90,24 @@ public class UserServiceImpl implements UserService {
             String userId = path.substring(path.lastIndexOf('/') + 1);
             user.setKeycloakUserId(userId);
         } else {
-            System.out.println("Service: Failed to create user. Status: " + response.getStatus());
+            log.info("Service: Failed to create user. Status: " + response.getStatus());
             String error = response.readEntity(String.class);
-            System.out.println("Service: Error response: " + error);
+            log.info("Service: Error response: " + error);
         }
         response.close();
+
+        RoleRepresentation roleRep = clientResource.roles()
+                .get(user.getRole())
+                .toRepresentation();
+
+        log.info("Adding role to user: " + roleRep);
+
+        realmResource.users()
+                .get(user.getKeycloakUserId())
+                .roles()
+                .clientLevel(clientUUID)
+                .add(List.of(roleRep));
+
         return createUserKeycloak(user);
     }
 

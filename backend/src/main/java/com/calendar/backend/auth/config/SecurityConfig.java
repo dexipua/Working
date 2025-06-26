@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.KeycloakBuilder;
+import org.keycloak.admin.client.resource.ClientResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -90,6 +91,16 @@ public class SecurityConfig {
                 .password("admin")
                 .build()
                 .realm(realm);
+    }
+
+    @Bean
+    public ClientResource clientResource(RealmResource realmResource, String clientUUID) {
+        return realmResource.clients().get(clientUUID);
+    }
+
+    @Bean
+    public String clientUUID() {
+        return realmResource().clients().findByClientId(clientId).get(0).getId();
     }
 
     @Bean
