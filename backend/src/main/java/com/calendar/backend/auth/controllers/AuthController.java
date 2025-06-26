@@ -96,7 +96,7 @@ public class AuthController {
 
                     ResponseCookie cookie = createCookie("accessToken", accessTokenString, jwtTime, false);
                     ResponseCookie userIdCookie = createCookie("userId", String.valueOf(user.getId()), -1, false);
-                    ResponseCookie idTokenCookie = createCookie("idToken", idTokenString, jwtTime, false);
+                    ResponseCookie idTokenCookie = createCookie("idToken", idTokenString, -1, false);
                     ResponseCookie roleCookie = createCookie("role", role, -1, false);
 
                     return ResponseEntity
