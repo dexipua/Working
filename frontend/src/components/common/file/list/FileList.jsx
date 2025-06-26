@@ -5,8 +5,8 @@ import FileBox from "./FileBox";
 const FileList = ({files, onDelete}) => {
     return (
         <Grid container spacing={1.5}>
-            {files.map(file => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={file.path}>
+            {files.map((file, index)  => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
                     <FileBox file={file} onDelete={onDelete} />
                 </Grid>
             ))}

@@ -1,5 +1,5 @@
 
-class DateUtils {
+class TextUtils {
 
     static getUserFullName(user) {
         return `${user.firstName} ${user.lastName}`
@@ -12,4 +12,4 @@ class DateUtils {
     }
 }
 
-export default DateUtils;
+export default TextUtils;

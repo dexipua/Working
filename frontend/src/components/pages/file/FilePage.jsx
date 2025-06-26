@@ -1,22 +1,37 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import FileList from "../../common/file/list/FileList";
 import {useParams} from "react-router-dom";
-import FileService from "../../../services/base/ext/FileService";
 import Box from "@mui/material/Box";
-import {Typography} from "@mui/material";
+import {Divider, Stack, Typography} from "@mui/material";
+import {listPanelStyles} from "../../../assets/styles";
+import FileUploader from "../../common/file/FileUploader";
+import FileService from "../../../services/base/ext/FileService";
 
 const FilePage = () => {
-    const [files, setFiles] = useState([]);
     const {userId} = useParams();
+    const [files, setFiles] = useState([]);
 
-    const loadFiles = async () => {
+    useEffect(() => {
+        const loadFiles = async () => {
+            try {
+                console.log(userId)
+                const response = await FileService.getAllFiles(userId, 0, 10);
+                console.log(response)
+                setFiles(response.content || []);
+            } catch (e) {
+                console.error("Не вдалося завантажити файли", e);
+            }
+        };
+
+        loadFiles();
+    }, [userId]);
+
+
+    const onUploadFile = async (file) => {
         try {
-            console.log(userId)
-            const response = await FileService.getAllFiles(userId, 0, 10);
-            console.log(response)
-            setFiles(response.content || []);
+            setFiles(prev => [...prev, file]);
         } catch (e) {
-            console.error("Не вдалося завантажити файли", e);
+            console.error("Помилка при видаленні файлу", e);
         }
     };
 
@@ -29,25 +44,20 @@ const FilePage = () => {
         }
     };
 
-    useEffect(() => {
-        if (userId) {
-            loadFiles();
-        }
-    }, [userId]);
 
     return (
-        <Box sx={{
-            width: 1500,
-            border: '1px solid #ddd',
-            padding: '20px',
-            margin: '10px',
-            borderRadius: "10px",
-            display: "flex",
-            flexDirection: "column"
-        }}>
-            <Typography variant="h4">User`s Files</Typography>
-            <FileList files={files} onDelete={deleteFile} />
-        </Box>
+        <>
+            <Stack direction="row" sx={listPanelStyles}>
+                <Typography variant="h4">Files</Typography>
+                <Box sx={listPanelStyles} gap={0.5}>
+                    <FileUploader onUploadFile={onUploadFile}/>
+                </Box>
+            </Stack>
+
+            <Divider sx={{mb: 1, mt: 0.5}}/>
+
+            <FileList files={files} onDelete={deleteFile}/>
+        </>
     );
 };
 

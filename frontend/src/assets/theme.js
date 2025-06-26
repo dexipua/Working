@@ -4,51 +4,26 @@ import "@fontsource/open-sans";
 const theme = createTheme({
     palette: {
         primary: {
-            main: "#222222",
+            main: '#ad1457',
+            dark: '#880e4f',
+            light: '#d81b60'
         },
-        secondary: {
-            main: "#347928",
-        },
-        success: {
-            main: "#c6e3c3"
-        },
-        text: {
-            secondary: "#222222",
-        }
     },
     typography: {
         fontFamily: "Open Sans, Arial, sans-serif",
     },
     components: {
-        MuiButton: {
+        MuiAppBar: {
             styleOverrides: {
-                root: {
-                    textTransform: "none"
-                },
-            },
-        },
-        MuiLink: {
-            styleOverrides: {
-                root: {
-                    textDecoration: 'none',
-                    color: '#125598',
-                    fontWeight: 500,
-                    transition: 'color 0.2s ease',
-                    '&:hover': {
-                        textDecoration: 'none',
-                        color: '#1976d2',
-                    },
-                    '&:active': {
-                        color: '#0d3c61',
-                    }
-                },
-            },
-            defaultProps: {
-                underline: 'hover',
+                colorDefault: ({theme}) => ({
+                    backgroundColor:
+                        theme.palette.mode === 'dark'
+                            ? '#000000'
+                            : '#fff',
+                }),
             },
         },
     },
-
 });
 
 export default theme;

@@ -1,4 +1,3 @@
-// src/api/client.js
 import axios from "axios";
 import Cookies from "js-cookie";
 import {history} from "./history";

@@ -1,24 +1,24 @@
 import {BrowserRouter, Route, Routes, useNavigate} from 'react-router-dom';
-import {ThemeProvider, Typography} from '@mui/material';
+import {ThemeProvider} from '@mui/material';
 import {LocalizationProvider} from '@mui/x-date-pickers';
 import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs';
-
 import theme from './assets/theme';
-
-import Page from './components/layouts/Page';
 import Users from './components/pages/user/Users';
 import UserPage from './components/pages/user/UserPage';
-import ProfilePage from './components/pages/user/ProfilePage';
+import Profile from './components/pages/user/Profile';
 import Login from "./security/login/Login";
 import {history} from "./utils/history";
 import {useEffect} from "react";
-
-import './index.css';
 import PrivateRoute from "./security/PrivateRoute";
 import {ErrorProvider} from "./contexts/ErrorContext";
 import FilePage from "./components/pages/file/FilePage";
 import ChatsPage from "./components/pages/chat/ChatPages";
 import Chat from "./components/pages/chat/Chat"
+import PageContainer from "./components/layouts/appbar_with_drawer/PageContainer";
+import First from "./components/pages/template/First";
+import Second from "./components/pages/template/Second";
+import Third from "./components/pages/template/Third";
+import NotFoundPage from "./components/pages/not_found_page/NotFoundPage";
 
 const InitNavigation = ({children}) => {
     const navigate = useNavigate();
@@ -33,21 +33,18 @@ const InitNavigation = ({children}) => {
 function App() {
 
     const routes = [
-        {path: "/users", element: <Page><Users/></Page>},
-        {path: "/profile", element: <ProfilePage/>},
-        {path: "/users/:id", element: <Page><UserPage/></Page>},
-        {path: "/files/:userId", element: <Page><FilePage/></Page>},
-        {path: "/chats", element: <Page><ChatsPage/></Page> },
-        {path: "/chat/:chatId", element: <Page><Chat/></Page> },
+        {path: "/first", element: <First/>},
+        {path: "/second", element: <Second/>},
+        {path: "/third", element: <Third/>},
 
-        {
-            path: "*", element:
-                <Page>
-                    <Typography p={"50px"} variant={"h4"} color={'error'}>
-                        404 Page not found
-                    </Typography>
-                </Page>
-        },
+        {path: "/users", element: <Users/>},
+        {path: "/profile", element: <Profile/>},
+        {path: "/users/:id", element: <UserPage/>},
+        {path: "/files/:userId", element: <FilePage/>},
+        {path: "/chats", element: <ChatsPage/>},
+        {path: "/chat/:chatId", element: <Chat/>},
+
+        {path: "*", element:<NotFoundPage/>},
 
     ];
 
@@ -63,7 +60,7 @@ function App() {
                                     <Route element={<PrivateRoute/>} key={index}>
                                         <Route
                                             path={route.path}
-                                            element={route.element}
+                                            element={<PageContainer>{route.element}</PageContainer>}
                                         />
                                     </Route>
                                 ))}

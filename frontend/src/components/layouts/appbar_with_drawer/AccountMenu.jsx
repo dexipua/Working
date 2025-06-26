@@ -7,14 +7,16 @@ import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import {IconButton} from "@mui/material";
-import {Link, useNavigate} from "react-router-dom";
-import AuthService from "../../../../services/auth/AuthService";
+import {Link, useLocation, useNavigate} from "react-router-dom";
+import AuthService from "../../../services/auth/AuthService";
 
-export default function AccountMenu() {
+const AccountMenu = () => {
     const navigate = useNavigate();
-
     const [open, setOpen] = React.useState(false);
     const anchorRef = React.useRef(null);
+
+    const location = useLocation();
+    const isActive = location.pathname === '/profile';
 
     const handleToggle = () => {
         setOpen((prevOpen) => !prevOpen);
@@ -38,7 +40,6 @@ export default function AccountMenu() {
         }
     };
 
-    
 
     const prevOpen = React.useRef(open);
     React.useEffect(() => {
@@ -49,12 +50,18 @@ export default function AccountMenu() {
         prevOpen.current = open;
     }, [open]);
 
+
     return (
         <>
             <IconButton
                 ref={anchorRef}
                 onClick={handleToggle}>
-                <AccountCircleIcon fontSize="large" color="primary"/>
+                <AccountCircleIcon
+                    fontSize={'large'}
+                    sx={(theme) => ({
+                        color: isActive ? (theme.palette.primary.main) : (theme.palette.mode === 'dark' ? (theme.palette.grey[50]) : (theme.palette.grey[800]))
+                    })}
+                />
             </IconButton>
             <Popper
                 open={open}
@@ -63,13 +70,8 @@ export default function AccountMenu() {
                 transition
                 disablePortal
             >
-                {({ TransitionProps }) => (
-                    <Grow
-                        {...TransitionProps}
-                        style={{
-                            transformOrigin: 'right top',
-                        }}
-                    >
+                {({TransitionProps}) => (
+                    <Grow{...TransitionProps} style={{transformOrigin: 'right top',}}>
                         <Paper>
                             <ClickAwayListener onClickAway={handleClose}>
                                 <MenuList
@@ -77,9 +79,7 @@ export default function AccountMenu() {
                                     id="composition-menu"
                                     aria-labelledby="composition-button"
                                 >
-                                    <MenuItem component={Link} to={"/profile"}
-                                              onClick={handleClose}
-                                    >
+                                    <MenuItem component={Link} to={"/profile"} onClick={handleClose}>
                                         Profile
                                     </MenuItem>
                                     <MenuItem onClick={handleLogout}>Logout</MenuItem>
@@ -92,3 +92,5 @@ export default function AccountMenu() {
         </>
     );
 }
+
+export default AccountMenu;

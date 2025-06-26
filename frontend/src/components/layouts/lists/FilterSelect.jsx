@@ -5,18 +5,18 @@ import {FormControl, InputLabel, MenuItem, Select} from "@mui/material";
 const styles = {
     minWidth: 90,
     '& .MuiSelect-root': {
-        color: theme.palette.secondary.main,
+        color: theme.palette.primary.main,
     },
     '& .MuiInputLabel-root': {
-        color: theme.palette.secondary.main,
+        color: theme.palette.primary.main,
     },
     '& .MuiOutlinedInput-root': {
         '& fieldset': {
-            borderColor: theme.palette.secondary.main,
+            borderColor: theme.palette.primary.main,
             borderWidth: 1.5,
         },
         '&:hover fieldset, &.Mui-focused fieldset': {
-            borderColor: theme.palette.secondary.main,
+            borderColor: theme.palette.primary.main,
             borderWidth: 1.5,
         },
     },

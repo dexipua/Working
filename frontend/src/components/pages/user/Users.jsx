@@ -67,74 +67,63 @@ const Users = () => {
 
     return (
         <>
-            <Box sx={{
-                width: 1500,
-                border: '1px solid #ddd',
-                padding: '20px',
-                margin: '10px',
-                borderRadius: "10px",
-                display: "flex",
-                flexDirection: "column"
-            }}>
-                <Stack direction="row" sx={listPanelStyles}>
-                    <Typography variant="h4">Users</Typography>
-                    <Box sx={listPanelStyles} gap={0.5}>
-                        <Search
-                            label={"First Name"}
-                            searchQuery={searchFirstName}
-                            setSearchQuery={setSearchFirstName}
-                        />
-                        <Search
-                            label={"Last Name"}
-                            searchQuery={searchLastName}
-                            setSearchQuery={setSearchLastName}
-                        />
-                        <Search
-                            label={"Email"}
-                            searchQuery={searchEmail}
-                            setSearchQuery={setSearchEmail}
-                        />
+            <Stack direction="row" sx={listPanelStyles}>
+                <Typography variant="h4">Users</Typography>
+                <Box sx={listPanelStyles} gap={0.5}>
+                    <Search
+                        label={"First Name"}
+                        searchQuery={searchFirstName}
+                        setSearchQuery={setSearchFirstName}
+                    />
+                    <Search
+                        label={"Last Name"}
+                        searchQuery={searchLastName}
+                        setSearchQuery={setSearchLastName}
+                    />
+                    <Search
+                        label={"Email"}
+                        searchQuery={searchEmail}
+                        setSearchQuery={setSearchEmail}
+                    />
 
-                        <OpenFiltersButton
-                            isOpenFilterMenu={isOpenFilterMenu}
-                            setOpenFilterMenu={setOpenFilterMenu}
-                        />
-                    </Box>
-                </Stack>
+                    <OpenFiltersButton
+                        isOpenFilterMenu={isOpenFilterMenu}
+                        setOpenFilterMenu={setOpenFilterMenu}
+                    />
+                </Box>
+            </Stack>
 
 
-                <Divider sx={{mb: 1, mt: 0.5}}/>
+            <Divider sx={{mb: 1, mt: 0.5}}/>
+            {isOpenFilterMenu && (
+                <Box sx={{mb: 1}}>
+                    <FiltersGroup
+                        filters={[
+                            {
+                                label: "Role",
+                                value: role,
+                                setValue: setRole,
+                                options: roleTypes,
+                                type: "select"
+                            }
+                        ]}
+                    />
+                </Box>
+            )}
 
-                {isOpenFilterMenu && (
-                    <Box sx={{mb: 1}}>
-                        <FiltersGroup
-                            filters={[
-                                {
-                                    label: "Role",
-                                    value: role,
-                                    setValue: setRole,
-                                    options: roleTypes,
-                                    type: "select"
-                                }
-                            ]}
-                        />
-                    </Box>
-                )}
+            <UserList
+                users={users}
+            />
 
-                <UserList
-                    users={users}
-                />
-
-                {pagesCount > 1 && (
-                    <Box sx={{marginTop: "auto"}}>
-                        <PaginationBox
-                            page={page}
-                            pagesCount={pagesCount}
-                            setPage={setPage}
-                        />
-                    </Box>
-                )}
-            </Box>
+            {pagesCount > 1 && (
+                <Box sx={{marginTop: "auto"}}>
+                    <PaginationBox
+                        page={page}
+                        pagesCount={pagesCount}
+                        setPage={setPage}
+                    />
+                </Box>
+            )}
         </>
     );
 };
