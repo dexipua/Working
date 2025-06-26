@@ -128,7 +128,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public File getAvatar(long userId) {
-        return fileRepository.findByUser_IdAndFileTypeEnumEquals(userId, FileType.AVATAR).get();
+        return fileRepository.findByUser_IdAndFileTypeEnumEquals(userId, FileType.AVATAR).orElse(null);
     }
 
     private String sha256(byte[] bytes) throws NoSuchAlgorithmException {
