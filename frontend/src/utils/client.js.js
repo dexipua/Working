@@ -1,5 +1,6 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+import AuthService from "./../services/auth/AuthService";
 import {history} from "./history";
 
 export const client = axios.create({
@@ -17,17 +18,6 @@ client.interceptors.request.use(
     },
     error => Promise.reject(error)
 );
-
-const redirectToKeycloak = () => {
-    const keycloakUrl = "http://localhost:8080/realms/coffee-programmers/protocol/openid-connect/auth";
-    const clientId = "coffee-programmers-client";
-    const redirectUri = "http://localhost:3000/callback";
-    const loginUrl = `${keycloakUrl}?client_id=${clientId}` +
-        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-        `&response_type=code&scope=openid`;
-
-    window.location.href = loginUrl;
-};
 
 client.interceptors.response.use(
     response => response,
@@ -47,7 +37,7 @@ client.interceptors.response.use(
         if (response && response.status === 401) {
             Cookies.remove("accessToken");
             if (history.navigate) {
-                redirectToKeycloak();
+                AuthService.redirectToKeycloak();
             }
         }
         return Promise.reject(error);
