@@ -5,6 +5,7 @@ import com.calendar.backend.dto.user.UserFullResponse;
 import com.calendar.backend.dto.user.UserListResponse;
 import com.calendar.backend.dto.user.UserUpdateRequest;
 import com.calendar.backend.dto.wrapper.PaginationListResponse;
+import com.calendar.backend.dto.wrapper.PasswordRequest;
 import com.calendar.backend.mappers.UserMapper;
 import com.calendar.backend.models.User;
 import com.calendar.backend.services.inter.UserService;
@@ -33,7 +34,7 @@ public class UserController {
     public UserFullResponse createUser(@Valid @RequestBody UserCreateRequest request) {
         log.info("Controller: Create user with body: {}", request);
         User user = userMapper.fromUserRequestToUser(request);
-        return userMapper.fromUserToUserResponse(userService.create(user));
+        return userMapper.fromUserToUserResponse(userService.createUser(user, request.getPassword()));
     }
 
     @PreAuthorize("hasRole('TEACHER')")
@@ -44,7 +45,7 @@ public class UserController {
             @Valid @RequestBody UserUpdateRequest request) {
         log.info("Controller: Update user with id: {} with body: {}", id, request);
         User user = userMapper.fromUserRequestToUser(request);
-        return userMapper.fromUserToUserResponse(userService.update(user, id));
+        return userMapper.fromUserToUserResponse(userService.updateUser(user, id));
     }
 
     @PutMapping("/update")
@@ -55,7 +56,7 @@ public class UserController {
         log.info("Controller: Update my user with body: {}", request);
         long userId = userService.findUserByAuth(auth).getId();
         User user = userMapper.fromUserRequestToUser(request);
-        return userMapper.fromUserToUserResponse(userService.update(user, userId));
+        return userMapper.fromUserToUserResponse(userService.updateUser(user, userId));
     }
 
     @PreAuthorize("hasRole('TEACHER')")
@@ -64,6 +65,15 @@ public class UserController {
     public void deleteUser(@PathVariable Long id) {
         log.info("Controller: Delete user with id: {}", id);
         userService.delete(id);
+    }
+
+    @PutMapping("/update/password")
+    @ResponseStatus(HttpStatus.OK)
+    public boolean updateMyPassword(
+            @RequestBody PasswordRequest password,
+            Authentication auth) {
+        log.info("Controller: Update my password");
+        return userService.updatePassword(password, auth);
     }
 
     @GetMapping("/{id}")

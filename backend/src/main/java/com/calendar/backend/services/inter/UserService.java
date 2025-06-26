@@ -9,9 +9,15 @@ import com.calendar.backend.models.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
-public interface UserService extends UserDetailsService {
-    User create(User user);
-    User update(User user, long userId);
+public interface UserService {
+    User createUserKeycloak(User user);
+    User createUser(User user, String password);
+
+    User updateUser(User user, long userId);
+    User updateUserKeycloak(User user, long userId);
+
+    boolean updatePassword(PasswordRequest passwordRequest, Authentication authentication);
+
     void delete(long id);
     User findById(long id);
     PaginationListResponse<User> findAll(
@@ -19,5 +25,8 @@ public interface UserService extends UserDetailsService {
             int page, int size, Authentication auth);
     User findUserByAuth(Authentication authentication);
     User findUserByEmail(String email);
+
+    User findUserByKeycloakUserId(String keycloakUserId);
+
     boolean isNotExistByEmail(String email);
 }

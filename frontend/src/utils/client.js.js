@@ -7,6 +7,27 @@ export const client = axios.create({
     withCredentials: true,
 });
 
+client.interceptors.request.use(
+    config => {
+        const token = Cookies.get("accessToken");
+        if (token) {
+            config.headers["Authorization"] = `Bearer ${token}`;
+        }
+        return config;
+    },
+    error => Promise.reject(error)
+);
+
+const redirectToKeycloak = () => {
+    const keycloakUrl = "http://localhost:8080/realms/coffee-programmers/protocol/openid-connect/auth";
+    const clientId = "coffee-programmers-client";
+    const redirectUri = "http://localhost:3000/callback";
+    const loginUrl = `${keycloakUrl}?client_id=${clientId}` +
+        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+        `&response_type=code&scope=openid`;
+
+    window.location.href = loginUrl;
+};
 
 client.interceptors.response.use(
     response => response,
@@ -26,7 +47,7 @@ client.interceptors.response.use(
         if (response && response.status === 401) {
             Cookies.remove("accessToken");
             if (history.navigate) {
-                history.navigate("/login");
+                redirectToKeycloak();
             }
         }
         return Promise.reject(error);

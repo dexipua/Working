@@ -33,7 +33,6 @@ const AccountMenu = () => {
     const handleLogout = async () => {
         try {
             await AuthService.logout();
-            navigate('/login')
         } catch (error) {
             console.error("Error during logout:", error);
             throw error;

@@ -1,37 +1,35 @@
 import axios from "axios";
 import Cookies from 'js-cookie';
 
-const API_URL = 'http://localhost:8081/api/'
+const API_URL = 'http://localhost:8081/'
 
 class AuthService {
 
-    static async login(email, password) {
-        try {
-            const
-                response = await axios.post(`${API_URL}auth/login`, {
-                    username: email,
-                    password,
-                }, {
-                    withCredentials: true
-                });
-            console.log(response.data)
-        } catch (error) {
-            throw error;
-        }
-        console.log(Cookies.get('jwtToken'));
-    }
-
     static async logout() {
+        const accessToken = Cookies.get('accessToken');
+        const idToken = Cookies.get('idToken');
+
         try {
-            await axios.post(`${API_URL}auth/logout`, {}, {
+            await axios.post('http://localhost:8081/api/auth/logout', {}, {
                 withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
             });
 
-        } catch (error) {
-            console.error("Logout failed:", error);
-            throw error;
+            const postLogoutRedirectUri = "http://localhost:3000/";
+            const logoutUrl =
+                `http://localhost:8080/realms/coffee-programmers/protocol/openid-connect/logout` +
+                `?post_logout_redirect_uri=${encodeURIComponent(postLogoutRedirectUri)}` +
+                `&id_token_hint=${idToken}`;
+
+            window.location.href = logoutUrl;
+        } catch (e) {
+            console.error("Logout failed", e);
         }
     }
+
+
 }
 
 export default AuthService;
