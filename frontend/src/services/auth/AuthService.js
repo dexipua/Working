@@ -12,9 +12,6 @@ class AuthService {
         try {
             await axios.post('http://localhost:8081/api/auth/logout', {}, {
                 withCredentials: true,
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
             });
 
             const postLogoutRedirectUri = "http://localhost:3000/";
