@@ -3,24 +3,33 @@ import Cookies from 'js-cookie';
 
 const API_URL = 'http://localhost:8081/'
 
+const redirectToKeycloak = () => {
+        const keycloakUrl = "http://localhost:8080/realms/coffee-programmers/protocol/openid-connect/auth";
+        const clientId = "coffee-programmers-client";
+        const redirectUri = "http://localhost:3000/callback";
+        const loginUrl = `${keycloakUrl}?client_id=${clientId}` +
+            `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+            `&response_type=code&scope=openid`;
+
+        window.location.href = loginUrl;
+};
+
 class AuthService {
 
     static async logout() {
-        const accessToken = Cookies.get('accessToken');
         const idToken = Cookies.get('idToken');
 
         try {
             await axios.post('http://localhost:8081/api/auth/logout', {}, {
+                params: {
+                    idToken: idToken,
+                },
                 withCredentials: true,
+            }).then(() => {
+                redirectToKeycloak();
+            }).catch(error => {
+                console.error('Logout failed:', error);
             });
-
-            const postLogoutRedirectUri = "http://localhost:3000/";
-            const logoutUrl =
-                `http://localhost:8080/realms/coffee-programmers/protocol/openid-connect/logout` +
-                `?post_logout_redirect_uri=${encodeURIComponent(postLogoutRedirectUri)}` +
-                `&id_token_hint=${idToken}`;
-
-            window.location.href = logoutUrl;
         } catch (e) {
             console.error("Logout failed", e);
         }

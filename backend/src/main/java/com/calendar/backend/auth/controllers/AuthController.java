@@ -4,6 +4,7 @@ import com.calendar.backend.models.User;
 import com.calendar.backend.services.inter.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.keycloak.admin.client.resource.RealmResource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,12 +19,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 import static com.calendar.backend.auth.utils.CookieUtil.createCookie;
 import static com.calendar.backend.auth.utils.CookieUtil.deleteCookie;
 import static com.calendar.backend.auth.utils.SecurityUtil.extractRole;
-import static org.springframework.http.CacheControl.maxAge;
 
 @Slf4j
 @RestController
@@ -45,6 +46,7 @@ public class AuthController {
     private Long jwtTime;
     private final UserService userService;
     private final JwtDecoder jwtDecoder;
+    private final RealmResource realmResource;
 
     @PostMapping("/callback")
     public Mono<ResponseEntity<Void>> exchangeCode(@RequestParam String code) {
@@ -113,9 +115,9 @@ public class AuthController {
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout() {
+    public ResponseEntity<Void> logout(@RequestParam String idToken) {
         log.info("AuthController: Logout user");
-        System.out.println("AuthController: Logout user: " + redirectUri);
+        realmResource.users().get(jwtDecoder.decode(idToken).getClaim("sub")).logout();
         return ResponseEntity.ok()
                 .headers(headers ->
                         headers.put(HttpHeaders.SET_COOKIE, List.of(
@@ -124,5 +126,7 @@ public class AuthController {
                                 deleteCookie("role").toString(),
                                 deleteCookie("idToken").toString())))
                 .build();
+
+
     }
 }

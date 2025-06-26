@@ -33,7 +33,6 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -160,6 +159,7 @@ public class UserServiceImpl implements UserService {
         formData.add("client_secret", clientSecret);
         formData.add("username", username);
         formData.add("password", password);
+
         try {
             webClient.post()
                     .uri("/realms/" + realm + "/protocol/openid-connect/token")
