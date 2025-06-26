@@ -44,6 +44,7 @@ public class UserServiceImpl implements UserService {
     private final RealmResource realmResource;
     private final ClientResource clientResource;
     private final String clientUUID;
+    private final Map<String, RoleRepresentation> clientRoles;
 
     private final WebClient webClient;
 
@@ -96,17 +97,11 @@ public class UserServiceImpl implements UserService {
         }
         response.close();
 
-        RoleRepresentation roleRep = clientResource.roles()
-                .get(user.getRole())
-                .toRepresentation();
-
-        log.info("Adding role to user: " + roleRep);
-
         realmResource.users()
                 .get(user.getKeycloakUserId())
                 .roles()
                 .clientLevel(clientUUID)
-                .add(List.of(roleRep));
+                .add(List.of(clientRoles.get(user.getRole())));
 
         return createUserKeycloak(user);
     }

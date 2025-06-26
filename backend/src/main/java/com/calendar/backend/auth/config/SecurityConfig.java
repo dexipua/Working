@@ -9,6 +9,7 @@ import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.ClientResource;
 import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -104,6 +106,11 @@ public class SecurityConfig {
     }
 
     @Bean
+    public Map<String, RoleRepresentation> clientRoles(ClientResource clientResource) {
+        return clientResource.roles().list().stream().collect(Collectors.toMap(RoleRepresentation::getName, Function.identity()));
+    }
+
+    @Bean
     public WebClient webClient() {
         return WebClient.create(keycloakUrl);
     }
@@ -121,4 +128,6 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
+
 }
