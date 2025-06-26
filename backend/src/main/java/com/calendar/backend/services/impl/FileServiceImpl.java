@@ -35,7 +35,7 @@ public class FileServiceImpl implements FileService {
 
 
     @Override
-    public String save(MultipartFile file, long ownerId, String frontendHash, FileType fileType) throws IOException, NoSuchAlgorithmException {
+    public File save(MultipartFile file, long ownerId, String frontendHash, FileType fileType) throws IOException, NoSuchAlgorithmException {
         String computedHash = chackHash(file, ownerId, frontendHash);
 
         boolean exist = this.existsByFileHashAndUser_Id(computedHash, ownerId);
@@ -66,7 +66,7 @@ public class FileServiceImpl implements FileService {
         entity.setFileSize(String.valueOf(file.getSize()));
         entity.setPath(publicUrl);
 
-        return fileRepository.save(entity).getPath();
+        return fileRepository.save(entity);
     }
 
     private String chackHash(MultipartFile file, long ownerId, String frontendHash) throws IOException, NoSuchAlgorithmException {

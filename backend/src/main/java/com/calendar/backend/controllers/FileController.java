@@ -31,24 +31,22 @@ public class FileController {
 
     @PostMapping("/upload")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<String> upload(
+    public FileSimpleResponse upload(
             @RequestParam MultipartFile file,
             @RequestParam long ownerId,
             @RequestParam String frontendHash) throws IOException, NoSuchAlgorithmException {
         log.info("Controller: upload file");
-        String url = fileService.save(file, ownerId, frontendHash, FileType.OTHER);
-        return ResponseEntity.ok(url);
+        return fileMapper.toSimpleResponse(fileService.save(file, ownerId, frontendHash, FileType.OTHER));
     }
 
     @PostMapping("/upload/avatar")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<String> uploadAvatar(
+    public FileSimpleResponse uploadAvatar(
             @RequestParam MultipartFile file,
             @RequestParam long ownerId,
             @RequestParam String frontendHash) throws IOException, NoSuchAlgorithmException {
         log.info("Controller: upload avatar file");
-        String url = fileService.save(file, ownerId, frontendHash, FileType.AVATAR);
-        return ResponseEntity.ok(url);
+        return fileMapper.toSimpleResponse(fileService.save(file, ownerId, frontendHash, FileType.AVATAR));
     }
 
     @GetMapping("/check/avatar")
