@@ -45,7 +45,7 @@ public class FileServiceImpl implements FileService {
         String publicUrl = "";
 
         if (FileType.AVATAR.equals(fileType) && exist) {
-            delete(fileRepository.findByFileHashAndUser_Id(computedHash, ownerId).get().getId());
+            delete(fileRepository.findByFileHashAndUser_Id(computedHash, ownerId).get(0).getId());
         }
 
         if (!exist) {
@@ -53,7 +53,7 @@ public class FileServiceImpl implements FileService {
             publicUrl = supabaseStorageService.uploadFile(realFileName, file.getBytes(), file.getContentType());
         }else{
             log.info("Service: Saving copy file with name {}", file.getOriginalFilename());
-            publicUrl = fileRepository.findByFileHashAndUser_Id(computedHash, ownerId).get().getPath();
+            publicUrl = fileRepository.findByFileHashAndUser_Id(computedHash, ownerId).get(0).getPath();
         }
 
         File entity = new File();
@@ -118,7 +118,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public boolean existsByFileHashAndUser_Id(String fileHash, Long userId) {
         log.info("Service: Exists file with hash {} and user id {}", fileHash, userId);
-        return fileRepository.findByFileHashAndUser_Id(fileHash, userId).isPresent();
+        return !(fileRepository.findByFileHashAndUser_Id(fileHash, userId).isEmpty());
     }
 
     @Override
