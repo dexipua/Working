@@ -35,9 +35,8 @@ client.interceptors.response.use(
         }
 
         if (response && response.status === 401) {
-            Cookies.remove("accessToken");
             if (history.navigate) {
-                AuthService.redirectToKeycloak();
+                 AuthService.refresh();
             }
         }
         return Promise.reject(error);

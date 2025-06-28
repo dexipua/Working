@@ -12,8 +12,7 @@ class AuthService {
                    const loginUrl = `${keycloakUrl}?client_id=${clientId}` +
                        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
                        `&response_type=code&scope=openid`;
-
-                   window.location.href = loginUrl;
+                    window.location.href = loginUrl;
     };
 
     static async logout() {
@@ -32,6 +31,28 @@ class AuthService {
             });
         } catch (e) {
             console.error("Logout failed", e);
+        }
+    }
+
+    static async refresh() {
+        const refreshToken = Cookies.get('refreshToken');
+
+        if (!refreshToken) {
+            console.log('Refresh token not found or expired, redirecting to Keycloak');
+            AuthService.redirectToKeycloak();
+            return;
+        }
+
+        try {
+            await axios.post('http://localhost:8081/api/auth/refresh', {}, {
+                params: {
+                    refreshToken: encodeURIComponent(refreshToken),
+                },
+                withCredentials: true,
+            });
+        } catch (error) {
+            console.error('Refresh failed:', error);
+            AuthService.redirectToKeycloak();
         }
     }
 

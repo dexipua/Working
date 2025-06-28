@@ -79,9 +79,6 @@ supabase:
 server:
   port: ${PORT}
 
-jwt-time: ${JWT_TIME}
-rt-time: ${RT_TIME}
-
 logging:
   level:
     org.springframework.security: DEBUG

@@ -39,7 +39,7 @@ public class CookieUtil {
                 .path("/");
 
         if (maxAge != -1) {
-            responseCookieBuilder.maxAge(Duration.ofMillis(maxAge));
+            responseCookieBuilder.maxAge(Duration.ofSeconds(maxAge));
         }
 
         return responseCookieBuilder.build();
