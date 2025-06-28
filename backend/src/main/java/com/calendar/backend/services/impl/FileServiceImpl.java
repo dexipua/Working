@@ -35,33 +35,40 @@ public class FileServiceImpl implements FileService {
 
 
     @Override
-    public File save(MultipartFile file, long ownerId, String frontendHash, FileType fileType) throws IOException, NoSuchAlgorithmException {
+    public File save(MultipartFile file, long ownerId, String frontendHash, FileType fileType)
+            throws IOException, NoSuchAlgorithmException {
+
         String computedHash = chackHash(file, ownerId, frontendHash);
+        boolean exists = this.existsByFileHashAndUser_Id(computedHash, ownerId);
+        String originalFilename = file.getOriginalFilename();
+        String realFileName = createName(originalFilename);
+        String publicUrl;
 
-        boolean exist = this.existsByFileHashAndUser_Id(computedHash, ownerId);
+        if (FileType.AVATAR.equals(fileType)) {
+            fileRepository.findByUser_IdAndFileTypeEnumEquals(ownerId, FileType.AVATAR)
+                    .ifPresent(existingAvatar -> delete(existingAvatar.getId()));
 
-        String realFileName = createName(file.getOriginalFilename());
-
-        String publicUrl = "";
-
-
-
-        if (!exist) {
-            log.info("Service: Saving file with name {}", file.getOriginalFilename());
+            log.info("Service: Replacing avatar with {}", originalFilename);
             publicUrl = supabaseStorageService.uploadFile(realFileName, file.getBytes(), file.getContentType());
-        }else{
-            if(FileType.OTHER.equals(fileType))
-            log.info("Service: Saving copy file with name {}", file.getOriginalFilename());
-            publicUrl = fileRepository.findByFileHashAndUser_Id(computedHash, ownerId).get(0).getPath();
-            if (FileType.AVATAR.equals(fileType)) {
-                delete(fileRepository.findByFileHashAndUser_Id(computedHash, ownerId).get(0).getId());
+
+        } else if (FileType.OTHER.equals(fileType)) {
+            if (exists) {
+                log.info("Service: Using existing file for {}", originalFilename);
+                publicUrl = fileRepository.findByFileHashAndUser_Id(computedHash, ownerId)
+                        .get(0).getPath();
+            } else {
+                log.info("Service: Saving new file {}", originalFilename);
+                publicUrl = supabaseStorageService.uploadFile(realFileName, file.getBytes(), file.getContentType());
             }
+
+        } else {
+            throw new IllegalArgumentException("Unknown FileType: " + fileType);
         }
 
         File entity = new File();
         entity.setFileTypeEnum(fileType);
         entity.setFileName(realFileName);
-        entity.setFileRealName(file.getOriginalFilename());
+        entity.setFileRealName(originalFilename);
         entity.setFileHash(computedHash);
         entity.setUser(userService.findById(ownerId));
         entity.setFileType(file.getContentType());
@@ -70,6 +77,8 @@ public class FileServiceImpl implements FileService {
 
         return fileRepository.save(entity);
     }
+
+
 
     private String chackHash(MultipartFile file, long ownerId, String frontendHash) throws IOException, NoSuchAlgorithmException {
         log.info("Service: Save file with id {}", file.getOriginalFilename());
