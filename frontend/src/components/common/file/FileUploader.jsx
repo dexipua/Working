@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import {Button, Typography} from "@mui/material";
 import FileService from "../../../services/base/ext/FileService";
+import FileUtils from "../../../utils/FileUtils";
 
 const FileUploader = ({onUploadFile}) => {
     const [status, setStatus] = useState()
@@ -11,18 +12,11 @@ const FileUploader = ({onUploadFile}) => {
         e.target.value = null;
     };
 
-    const computeHash = async (file) => {
-        const arrayBuffer = await file.arrayBuffer();
-        const hashBuffer = await crypto.subtle.digest("SHA-256", arrayBuffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-    };
-
     const uploadFile = async (file) => {
         if (!file) return;
 
         setStatus("Обчислення хешу...");
-        const hash = await computeHash(file);
+        const hash = await FileUtils.computeHash(file);
 
         setStatus("Завантаження файлу...");
         try {

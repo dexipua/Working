@@ -22,6 +22,23 @@ class FileService extends BaseService {
         });
     }
 
+    uploadAvatar(file, frontendHash, ownerId) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("ownerId", ownerId);
+        formData.append("frontendHash", frontendHash);
+
+        return this.post("/upload/avatar", formData, {
+            headers: { "Content-Type": "multipart/form-data" }
+        });
+    }
+
+    getAvatar(userId) {
+        return this.get("/avatar", {
+            params: { userId }
+        });
+    }
+
     getAllFiles(userId, page = 0, size = 10) {
         return this.get("", {
             params: { userId, page, size }

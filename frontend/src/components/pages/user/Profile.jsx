@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import {useError} from "../../../contexts/ErrorContext";
-import Cookies from "js-cookie";
 import UserService from "../../../services/base/ext/UserService";
 import Loading from "../../layouts/Loading";
 import {Typography} from "@mui/material";
@@ -10,7 +9,6 @@ import Statistics from "../../common/user/page/Statistics";
 
 const Profile = () => {
     const {showError} = useError();
-    const myId = Cookies.get('userId');
     const [user, setUser] = useState(null);
 
     const [loading, setLoading] = useState(true);
@@ -20,7 +18,6 @@ const Profile = () => {
         const fetchData = async () => {
             try {
                 const response = await UserService.getMyUser();
-
                 setUser(response);
             } catch (error) {
                 setError(error);
@@ -30,7 +27,7 @@ const Profile = () => {
         };
 
         fetchData();
-    }, [myId]);
+    }, []);
 
     if (loading) {
         return <Loading/>;
