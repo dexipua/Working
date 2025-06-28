@@ -41,7 +41,7 @@ public class SecurityConfig {
                 .cors(withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(a -> a
-                        .requestMatchers("/api/auth/logout", "/api/auth/callback", "/ws/**").permitAll()
+                        .requestMatchers("/api/auth/logout", "/api/auth/callback", "/ws/**", "/api/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // Using STATELESS for JWT

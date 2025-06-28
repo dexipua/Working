@@ -42,8 +42,6 @@ public class AuthController {
     private String clientId;
     @Value("${spring.security.oauth2.client.registration.coffee-programmers-client.redirect-uri}")
     private String redirectUri;
-    @Value("${jwt-time}")
-    private Long jwtTime;
     private final UserService userService;
     private final JwtDecoder jwtDecoder;
     private final RealmResource realmResource;
@@ -60,55 +58,76 @@ public class AuthController {
             formData.add("client_secret", clientSecret);
         }
 
+        return requestToken(formData);
+    }
+
+    @PostMapping("/refresh")
+    public Mono<ResponseEntity<Void>> refreshToken(@RequestParam String refreshToken) {
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("grant_type", "refresh_token");
+        formData.add("refresh_token", refreshToken);
+        formData.add("client_id", clientId);
+        if (clientSecret != null) {
+            formData.add("client_secret", clientSecret);
+        }
+
+        return requestToken(formData);
+    }
+
+    private Mono<ResponseEntity<Void>> requestToken(MultiValueMap<String, String> formData){
         return webClient.post()
-                .uri(uriBuilder ->
-                        uriBuilder
-                                .path("/realms/" + realm + "/protocol/openid-connect/token")
-                                .build()
-                )
+                .uri(uriBuilder -> uriBuilder
+                        .path("/realms/" + realm + "/protocol/openid-connect/token")
+                        .build())
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .bodyValue(formData)
-                .retrieve().bodyToMono(Map.class)
-                .map(response -> {
-                    log.info("Auth controller: response from code exchange: " + response);
+                .retrieve()
+                .bodyToMono(Map.class)
+                .map(AuthController.this::handleResponse);
+    }
 
-                    String accessTokenString = (String) response.get("access_token");
-                    String idTokenString = (String) response.get("id_token");
+    private ResponseEntity<Void> handleResponse(Map response) {
+        String accessTokenString = (String) response.get("access_token");
+        String refreshTokenString = (String) response.get("refresh_token");
+        String idTokenString = (String) response.get("id_token");
 
-                    Jwt idToken = jwtDecoder.decode(idTokenString);
-                    Jwt accessToken = jwtDecoder.decode(accessTokenString);
+        Jwt accessToken = jwtDecoder.decode(accessTokenString);
+        Jwt idToken = jwtDecoder.decode(idTokenString);
 
-                    String email = idToken.getClaim("email");
-                    String role = extractRole(clientId, accessToken);
-                    User user = new User();
-                    user.setEmail(email);
-                    user.setBirthday(LocalDate.parse(idToken.getClaim("birthday")));
-                    user.setFirstName(idToken.getClaim("given_name"));
-                    user.setLastName(idToken.getClaim("family_name"));
-                    user.setDescription(idToken.getClaim("description"));
-                    user.setKeycloakUserId(idToken.getClaim("sub"));
-                    user.setRole(role);
-                    if (userService.isNotExistByEmail(email)) {
-                        user.setId(userService.createUserKeycloak(user).getId());
-                    } else {
-                        user.setId(userService.updateUserKeycloak(user, userService.findUserByEmail(email).getId()).getId());
-                    }
+        String email = idToken.getClaim("email");
+        String role = extractRole(clientId, accessToken);
 
-                    ResponseCookie cookie = createCookie("accessToken", accessTokenString, jwtTime, false);
-                    ResponseCookie userIdCookie = createCookie("userId", String.valueOf(user.getId()), -1, false);
-                    ResponseCookie roleCookie = createCookie("role", role, -1, false);
+        User user = new User();
+        user.setEmail(email);
+        user.setBirthday(LocalDate.parse(idToken.getClaim("birthday")));
+        user.setFirstName(idToken.getClaim("given_name"));
+        user.setLastName(idToken.getClaim("family_name"));
+        user.setDescription(idToken.getClaim("description"));
+        user.setKeycloakUserId(idToken.getClaim("sub"));
+        user.setRole(role);
 
-                    return ResponseEntity
-                            .ok()
-                            .headers(httpHeaders -> {
-                                httpHeaders.put(HttpHeaders.SET_COOKIE, List.of(
-                                        cookie.toString(),
-                                        userIdCookie.toString(),
-                                        roleCookie.toString())
-                                );
-                            })
-                            .build();
-                });
+        if (userService.isNotExistByEmail(email)) {
+            user.setId(userService.createUserKeycloak(user).getId());
+        } else {
+            user.setId(userService.updateUserKeycloak(user, userService.findUserByEmail(email).getId()).getId());
+        }
+
+        ResponseCookie accessTokenCookie = createCookie("accessToken", accessTokenString, Long.parseLong(response.get("expires_in").toString()), false);
+        ResponseCookie refreshTokenCookie = createCookie("refreshToken", refreshTokenString, Long.parseLong(response.get("refresh_expires_in").toString()), false);
+        ResponseCookie userIdCookie = createCookie("userId", String.valueOf(user.getId()), -1, false);
+        ResponseCookie roleCookie = createCookie("role", role, -1, false);
+
+        return ResponseEntity
+                .ok()
+                .headers(httpHeaders -> {
+                    httpHeaders.put(HttpHeaders.SET_COOKIE, List.of(
+                            accessTokenCookie.toString(),
+                            userIdCookie.toString(),
+                            roleCookie.toString(),
+                            refreshTokenCookie.toString())
+                    );
+                })
+                .build();
     }
 
     @ResponseStatus(HttpStatus.OK)
@@ -120,6 +139,7 @@ public class AuthController {
                 .headers(headers ->
                         headers.put(HttpHeaders.SET_COOKIE, List.of(
                                 deleteCookie("accessToken").toString(),
+                                deleteCookie("refreshToken").toString(),
                                 deleteCookie("userId").toString(),
                                 deleteCookie("role").toString())))
                 .build();
