@@ -44,16 +44,18 @@ public class FileServiceImpl implements FileService {
 
         String publicUrl = "";
 
-        if (FileType.AVATAR.equals(fileType) && exist) {
-            delete(fileRepository.findByFileHashAndUser_Id(computedHash, ownerId).get(0).getId());
-        }
+
 
         if (!exist) {
             log.info("Service: Saving file with name {}", file.getOriginalFilename());
             publicUrl = supabaseStorageService.uploadFile(realFileName, file.getBytes(), file.getContentType());
         }else{
+            if(FileType.OTHER.equals(fileType))
             log.info("Service: Saving copy file with name {}", file.getOriginalFilename());
             publicUrl = fileRepository.findByFileHashAndUser_Id(computedHash, ownerId).get(0).getPath();
+            if (FileType.AVATAR.equals(fileType)) {
+                delete(fileRepository.findByFileHashAndUser_Id(computedHash, ownerId).get(0).getId());
+            }
         }
 
         File entity = new File();
