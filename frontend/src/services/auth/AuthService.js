@@ -17,12 +17,12 @@ class AuthService {
     };
 
     static async logout() {
-        const idToken = Cookies.get('idToken');
+        const userId = Cookies.get('userId');
 
         try {
             await axios.post('http://localhost:8081/api/auth/logout', {}, {
                 params: {
-                    idToken: idToken,
+                    userId: userId,
                 },
                 withCredentials: true,
             }).then(() => {

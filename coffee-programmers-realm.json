@@ -1,6 +1,8 @@
 {
   "id" : "b58ffdc9-c42a-406c-b491-36fed7cc85b8",
   "realm" : "coffee-programmers",
+  "displayName" : "",
+  "displayNameHtml" : "",
   "notBefore" : 0,
   "defaultSignatureAlgorithm" : "RS256",
   "revokeRefreshToken" : false,
@@ -9,8 +11,8 @@
   "accessTokenLifespanForImplicitFlow" : 900,
   "ssoSessionIdleTimeout" : 1800,
   "ssoSessionMaxLifespan" : 36000,
-  "ssoSessionIdleTimeoutRememberMe" : 0,
-  "ssoSessionMaxLifespanRememberMe" : 0,
+  "ssoSessionIdleTimeoutRememberMe" : 172800,
+  "ssoSessionMaxLifespanRememberMe" : 1209600,
   "offlineSessionIdleTimeout" : 2592000,
   "offlineSessionMaxLifespanEnabled" : false,
   "offlineSessionMaxLifespan" : 5184000,
@@ -29,7 +31,7 @@
   "sslRequired" : "external",
   "registrationAllowed" : true,
   "registrationEmailAsUsername" : true,
-  "rememberMe" : false,
+  "rememberMe" : true,
   "verifyEmail" : false,
   "loginWithEmailAllowed" : true,
   "duplicateEmailsAllowed" : false,
@@ -424,8 +426,9 @@
     "credentials" : [ {
       "id" : "2ada4436-9746-4427-b2c9-b8e61686c385",
       "type" : "password",
-      "createdDate" : 1750873693930,
-      "secretData" : "{\"value\":\"I4THe3L1DTb9ORl48VOycxCo+AQKZM/X/TTo+Plhgzg=\",\"salt\":\"nY3hKewTff/UB8KPU9YXAQ==\",\"additionalParameters\":{}}",
+      "userLabel" : "My password",
+      "createdDate" : 1751112889642,
+      "secretData" : "{\"value\":\"lgWTIZk8Rluuchidlv0yfpJtIgxXZwgvnfyYYJUcVYs=\",\"salt\":\"9cDtd1fV8uNZPMofwU/X6A==\",\"additionalParameters\":{}}",
       "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
     } ],
     "disableableCredentialTypes" : [ ],
@@ -434,7 +437,7 @@
     "clientRoles" : {
       "coffee-programmers-client" : [ "TEACHER" ]
     },
-    "notBefore" : 0,
+    "notBefore" : 1751113378,
     "groups" : [ ]
   } ],
   "scopeMappings" : [ {
@@ -2173,13 +2176,21 @@
     "clientOfflineSessionMaxLifespan" : "0",
     "oauth2DevicePollingInterval" : "5",
     "clientSessionIdleTimeout" : "0",
+    "actionTokenGeneratedByUserLifespan.verify-email" : "",
+    "actionTokenGeneratedByUserLifespan.idp-verify-account-via-email" : "",
     "clientOfflineSessionIdleTimeout" : "0",
+    "actionTokenGeneratedByUserLifespan.execute-actions" : "",
     "cibaInterval" : "5",
     "realmReusableOtpCode" : "false",
     "cibaExpiresIn" : "120",
     "oauth2DeviceCodeLifespan" : "600",
+    "saml.signature.algorithm" : "",
     "parRequestUriLifespan" : "60",
     "clientSessionMaxLifespan" : "0",
+    "frontendUrl" : "",
+    "acr.loa.map" : "{}",
+    "shortVerificationUri" : "",
+    "actionTokenGeneratedByUserLifespan.reset-credentials" : "",
     "darkMode" : "true"
   },
   "keycloakVersion" : "26.2.5",

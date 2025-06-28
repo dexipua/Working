@@ -96,7 +96,6 @@ public class AuthController {
 
                     ResponseCookie cookie = createCookie("accessToken", accessTokenString, jwtTime, false);
                     ResponseCookie userIdCookie = createCookie("userId", String.valueOf(user.getId()), -1, false);
-                    ResponseCookie idTokenCookie = createCookie("idToken", idTokenString, -1, false);
                     ResponseCookie roleCookie = createCookie("role", role, -1, false);
 
                     return ResponseEntity
@@ -105,7 +104,6 @@ public class AuthController {
                                 httpHeaders.put(HttpHeaders.SET_COOKIE, List.of(
                                         cookie.toString(),
                                         userIdCookie.toString(),
-                                        idTokenCookie.toString(),
                                         roleCookie.toString())
                                 );
                             })
@@ -115,18 +113,15 @@ public class AuthController {
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestParam String idToken) {
+    public ResponseEntity<Void> logout(@RequestParam Long userId) {
         log.info("AuthController: Logout user");
-        realmResource.users().get(jwtDecoder.decode(idToken).getClaim("sub")).logout();
+        realmResource.users().get(userService.findById(userId).getKeycloakUserId()).logout();
         return ResponseEntity.ok()
                 .headers(headers ->
                         headers.put(HttpHeaders.SET_COOKIE, List.of(
                                 deleteCookie("accessToken").toString(),
                                 deleteCookie("userId").toString(),
-                                deleteCookie("role").toString(),
-                                deleteCookie("idToken").toString())))
+                                deleteCookie("role").toString())))
                 .build();
-
-
     }
 }
