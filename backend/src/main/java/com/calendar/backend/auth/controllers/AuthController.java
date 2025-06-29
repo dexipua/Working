@@ -16,7 +16,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -47,7 +47,7 @@ public class AuthController {
     private final RealmResource realmResource;
 
     @PostMapping("/callback")
-    public Mono<ResponseEntity<Void>> exchangeCode(@RequestParam String code) {
+    public ResponseEntity<Void> exchangeCode(@RequestParam String code) {
         log.info(code);
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "authorization_code");
@@ -62,7 +62,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public Mono<ResponseEntity<Void>> refreshToken(@RequestParam String refreshToken) {
+    public ResponseEntity<Void> refreshToken(@RequestParam String refreshToken) {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "refresh_token");
         formData.add("refresh_token", refreshToken);
@@ -74,17 +74,25 @@ public class AuthController {
         return requestToken(formData);
     }
 
-    private Mono<ResponseEntity<Void>> requestToken(MultiValueMap<String, String> formData){
-        return webClient.post()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/realms/" + realm + "/protocol/openid-connect/token")
-                        .build())
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .bodyValue(formData)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .map(AuthController.this::handleResponse);
+    private ResponseEntity<Void> requestToken(MultiValueMap<String, String> formData) {
+        try {
+            return handleResponse(
+                    webClient.post()
+                            .uri("/realms/" + realm + "/protocol/openid-connect/token")
+                            .header("Content-Type", "application/x-www-form-urlencoded")
+                            .bodyValue(formData)
+                            .retrieve()
+                            .toEntity(Map.class)
+                            .block()
+                            .getBody()
+            );
+        } catch (WebClientResponseException e) {
+            log.error("Controller: {} Error response from Keycloak: {}", e.getRawStatusCode(), e.getResponseBodyAsString());
+
+            return ResponseEntity.status(e.getRawStatusCode()).build();
+        }
     }
+
 
     private ResponseEntity<Void> handleResponse(Map response) {
         String accessTokenString = (String) response.get("access_token");
