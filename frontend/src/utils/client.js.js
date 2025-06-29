@@ -1,7 +1,6 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 import AuthService from "./../services/auth/AuthService";
-import {history} from "./history";
 
 export const client = axios.create({
     baseURL: "http://localhost:8081/api",
@@ -22,22 +21,21 @@ client.interceptors.request.use(
 client.interceptors.response.use(
     response => response,
     async error => {
-        const { response, config } = error;
+        const {response, config} = error;
         console.log(
             "Intercepted error",
             error,
             response,
             config,
             config._retried)
-        if (response && response.status === 498 && !config._retried) {
-            config._retried = true;
-            return client(config);
-        }
+        // if (response && response.status === 498 && !config._retried) {
+        //     config._retried = true;
+        //     return client(config);
+        // }
 
         if (response && response.status === 401) {
-            if (history.navigate) {
-                 AuthService.refresh();
-            }
+            //console.log("Refreshing token")
+            await AuthService.refresh();
         }
         return Promise.reject(error);
     }
