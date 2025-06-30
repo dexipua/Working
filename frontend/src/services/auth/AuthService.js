@@ -35,6 +35,7 @@ class AuthService {
     }
 
     static async refresh() {
+        console.log('Refreshing token1');
         const refreshToken = Cookies.get('refreshToken');
 
         if (!refreshToken) {

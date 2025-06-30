@@ -11,12 +11,11 @@ import {Link, useLocation, useNavigate} from "react-router-dom";
 import AuthService from "../../../services/auth/AuthService";
 
 const AccountMenu = () => {
-    const navigate = useNavigate();
-    const [open, setOpen] = React.useState(false);
-    const anchorRef = React.useRef(null);
-
     const location = useLocation();
     const isActive = location.pathname === '/profile';
+
+    const [open, setOpen] = React.useState(false);
+    const anchorRef = React.useRef(null);
 
     const handleToggle = () => {
         setOpen((prevOpen) => !prevOpen);
