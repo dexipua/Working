@@ -45,6 +45,8 @@ public class FileServiceImpl implements FileService {
         String publicUrl;
 
         if (FileType.AVATAR.equals(fileType)) {
+            validateAvatarFormat(file);
+
             fileRepository.findByUser_IdAndFileTypeEnumEquals(ownerId, FileType.AVATAR)
                     .ifPresent(existingAvatar -> delete(existingAvatar.getId()));
 
@@ -78,8 +80,6 @@ public class FileServiceImpl implements FileService {
         return fileRepository.save(entity);
     }
 
-
-
     private String chackHash(MultipartFile file, long ownerId, String frontendHash) throws IOException, NoSuchAlgorithmException {
         log.info("Service: Save file with id {}", file.getOriginalFilename());
         byte[] bytes = file.getBytes();
@@ -103,6 +103,28 @@ public class FileServiceImpl implements FileService {
 
         return  pre_UUID + realFileName;
     }
+
+
+    private void validateAvatarFormat(MultipartFile file) {
+        log.info("Service: Validating avatar format");
+        String contentType = file.getContentType();
+        String filename = file.getOriginalFilename();
+
+        if (contentType == null ||
+                !(contentType.equals("image/png") || contentType.equals("image/jpeg"))) {
+            log.error("Service: Invalid avatar format");
+            throw new IllegalArgumentException("Unsupported avatar image format. Only PNG and JPEG are allowed.");
+        }
+
+        if (filename != null &&
+                !(filename.toLowerCase().endsWith(".png") ||
+                        filename.toLowerCase().endsWith(".jpg") ||
+                        filename.toLowerCase().endsWith(".jpeg"))) {
+            log.error("Service: Invalid avatar format");
+            throw new IllegalArgumentException("Invalid avatar file extension. Only .png, .jpg, .jpeg are allowed.");
+        }
+    }
+
 
     @Override
     public PaginationListResponse<File> findByUserId(Long userId, int page, int size) {
